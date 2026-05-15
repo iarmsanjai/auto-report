@@ -1,0 +1,22 @@
+{
+  "admin": {
+    "username": "admin",
+    "hashed_password": "$2b$12$R6.t9SAuyJtWTeF3vc74cOmFWP9oIhuRep5PCncQMTRGMX2MsJmw.",
+    "role": "admin"
+  },
+  "sanjai": {
+    "username": "sanjai",
+    "hashed_password": "$2b$12$ehle4AZO8di6VlK477fD9OIV7MWkEC48BlYkemcDIgxnOnKo/GIba",
+    "role": "editor"
+  },
+  "ptuser": {
+    "username": "ptuser",
+    "hashed_password": "$2b$12$7Vm1vw4UN6IafyCQLVuuKebnz1PzyOoZIk2wT.QmtC.U/mKtJSecy",
+    "role": "editor"
+  },
+  "ptuser1": {
+    "username": "ptuser1",
+    "hashed_password": "$2b$12$W8oGIbkg/v5SPbGnqPVlsuI6x6ftJUtPuMCR/KcIEDaRXaIy4LsX6",
+    "role": "viewer"
+  }
+}

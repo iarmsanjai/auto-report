@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>VAPT Report — {{ report.client_name }}</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'EB Garamond', Garamond, serif; font-size: 12px; color: #222; background: #fff; padding: 30px 40px; max-width: 920px; margin: 0 auto; line-height: 1.65; }
+
+/* ── Section headings ── */
+h1.sec { font-size: 20px; font-weight: 700; color: #1f86d0; border-bottom: 2px solid #1f86d0; padding-bottom: 4px; margin: 32px 0 14px; }
+h2.sub { font-size: 16px; font-weight: 600; margin: 18px 0 8px; color: #000; }
+h3.sub2 { font-size: 14px; font-weight: 700; margin: 14px 0 6px; color: #000; }
+p { margin-bottom: 8px; text-align: justify; font-size: 12px; line-height: 1.65; }
+ul { padding-left: 20px; margin: 6px 0 10px; }
+li { font-size: 12px; line-height: 1.6; margin-bottom: 4px; }
+a { color: #1f86d0; text-decoration: none; }
+code { font-family: 'Courier New', monospace; background: #f4f4f4; padding: 2px 5px; border-radius: 3px; font-size: 11px; }
+pre { font-family: 'Courier New', monospace; background: #f8f8f8; border: 1px solid #ddd; padding: 12px; border-radius: 4px; font-size: 11px; overflow-x: auto; white-space: pre-wrap; margin: 10px 0; }
+
+/* ── Tables ── */
+table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 12px; }
+th { background: #1f86d0; color: #fff; border: 1px solid #1f86d0; padding: 7px 10px; text-align: center; font-weight: 600; }
+td { border: 1px solid #1f86d0; padding: 6px 10px; vertical-align: top; }
+td.lbl { background: #eef5fc; font-weight: 600; width: 28%; }
+tbody tr:nth-child(even) { background: #fafcff; }
+
+/* ── Cover ── */
+.cover { text-align: center; padding: 90px 40px; background: #050a14; color: #fff; margin: -30px -40px 40px; }
+.cover h1 { font-size: 30px; font-weight: 700; margin: 14px 0; line-height: 1.3; }
+.cover .label { font-size: 14px; color: #90b8e8; margin: 8px 0 2px; }
+.cover .value { font-size: 16px; color: #fff; font-weight: 600; margin-bottom: 10px; }
+.cover .meta { font-size: 13px; color: #90b8e8; margin-top: 6px; }
+
+/* ── Severity colours ── */
+.sev-critical { background: #e60000; color: #fff; font-weight: 700; text-align: center; }
+.sev-high     { background: #ff7a00; color: #fff; font-weight: 700; text-align: center; }
+.sev-medium   { background: #ffcc00; color: #000; font-weight: 700; text-align: center; }
+.sev-low      { background: #6b1c4f; color: #fff; font-weight: 700; text-align: center; }
+.sev-info     { background: #6e6e6e; color: #fff; font-weight: 700; text-align: center; }
+
+/* ── Ease colours ── */
+.ease-trivial   { background: #196b24; color: #fff; font-weight: 700; text-align: center; }
+.ease-moderate  { background: #ff7a00; color: #fff; font-weight: 700; text-align: center; }
+.ease-difficult { background: #c00000; color: #fff; font-weight: 700; text-align: center; }
+
+/* ── Risk strip ── */
+.risk-strip { display: flex; margin: 20px 0; border-radius: 6px; overflow: hidden; }
+.risk-box { flex: 1; padding: 20px 10px; text-align: center; font-weight: 700; }
+.risk-box .num { font-size: 40px; display: block; line-height: 1; }
+.risk-box .lbl { font-size: 11px; margin-top: 5px; opacity: .9; letter-spacing: .5px; }
+
+/* ── CVSS box ── */
+.cvss-container { margin: 12px 0; }
+.cvss-badge { display: inline-block; padding: 5px 14px; border-radius: 5px; font-size: 12px; font-weight: 700; letter-spacing: .2px; }
+.cvss-badge a { color: inherit !important; text-decoration: none; }
+
+/* ── Finding block ── */
+.finding-block { margin-bottom: 36px; page-break-inside: avoid; }
+.finding-title { font-size: 15px; font-weight: 700; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 12px; }
+.section-label { font-size: 13px; font-weight: 700; margin: 14px 0 6px; color: #111; }
+.desc-block { background: #f9fbff; border-left: 3px solid #1f86d0; padding: 10px 14px; border-radius: 0 4px 4px 0; }
+.poc-block { background: #0a0a14; color: #a0ffa0; font-family: 'Courier New', monospace; font-size: 11px; padding: 12px; border-radius: 5px; white-space: pre-wrap; }
+.payload-block code { display: block; background: #f0f4f8; border-left: 2px solid #1f86d055; margin: 4px 0; padding: 4px 10px; }
+.watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); opacity: .03; z-index: -1; font-size: 120px; font-weight: 900; color: #1f86d0; pointer-events: none; user-select: none; }
+
+@media print {
+  .cover { page-break-after: always; }
+  .finding-block { page-break-inside: avoid; }
+  body { max-width: 100%; padding: 20px 25px; }
+}
+</style>
+</head>
+<body>
+<div class="watermark">IARM</div>
+
+<!-- ───────────── COVER ───────────── -->
+<div class="cover">
+  <p class="meta">{{ report.report_delivery_date | fmt_date }}</p>
+  <h1>WEB APPLICATION<br>PENETRATION TESTING REPORT</h1>
+  <p class="label">Prepared For</p>
+  <p class="value">{{ report.client_name or "[Client Name]" }}</p>
+  <p class="label">Prepared By</p>
+  <p class="value">IARM Information Security</p>
+</div>
+
+<!-- ───────────── 1.0 DOCUMENT CONTROL ───────────── -->
+<h1 class="sec">1.0 Document Control</h1>
+<h2 class="sub">Client Confidentiality</h2>
+<p>This document contains <strong>Client Confidential information</strong> and may not be copied without written permission.</p>
+<h2 class="sub">Document Version Control</h2>
+<table>
+  <thead><tr><th>Issue No</th><th>Issue Date</th><th>Issued By</th><th>Change Description</th></tr></thead>
+  <tbody>
+    <tr><td>0.1</td><td>{{ report.basic_document_date | fmt_date_short }}</td><td>{{ report.tester_name }}</td><td>Basic Document Outline</td></tr>
+    <tr><td>0.2</td><td>{{ report.draft_document_date | fmt_date_short }}</td><td>{{ report.tester_name }}</td><td>Draft Document</td></tr>
+    <tr><td>0.3</td><td>{{ report.peer_review_date | fmt_date_short }}</td><td>{{ report.validator_name }}</td><td>Peer Review</td></tr>
+    <tr><td>1.0</td><td>{{ report.report_delivery_date | fmt_date_short }}</td><td>{{ report.validator_name }}</td><td>Released to Client</td></tr>
+  </tbody>
+</table>
+<h2 class="sub">Project Metadata</h2>
+<table>
+  <thead><tr><th>Property</th><th>Details</th></tr></thead>
+  <tbody>
+    <tr><td class="lbl">Client Name</td><td>{{ report.client_name }}</td></tr>
+    <tr><td class="lbl">Application Name</td><td>{{ report.application_name }}</td></tr>
+    <tr><td class="lbl">Application Version</td><td>{{ report.application_version }}</td></tr>
+    <tr><td class="lbl">Project ID</td><td>{{ report.project_id }}</td></tr>
+    <tr><td class="lbl">Testing Approach</td><td>{{ report.application_approach }}</td></tr>
+    <tr><td class="lbl">Created By</td><td>{{ report.tester_name }}</td></tr>
+    <tr><td class="lbl">Approved By</td><td>{{ report.validator_name }}</td></tr>
+    <tr><td class="lbl">Confidentiality Level</td><td>Very High</td></tr>
+  </tbody>
+</table>
+
+<!-- ───────────── 2.0 ABOUT US ───────────── -->
+<h1 class="sec">2.0 About Us</h1>
+<p><strong>IARM</strong> is a distinguished cyber security organization that provides an extensive array of cyber security assessment capabilities and services tailored to meet each client's specific needs.</p>
+<p>IARM holds <strong>CREST accreditation</strong> for penetration testing services — a prestigious recognition of our dedication to delivering the highest levels of security testing. We are proud to have met and surpassed these stringent benchmarks.</p>
+<p><strong>Countries:</strong> USA | India | Singapore &nbsp;|&nbsp; <strong>Website:</strong> <a href="https://www.iarminfo.com">www.iarminfo.com</a> &nbsp;|&nbsp; <strong>Email:</strong> info@iarminfo.com</p>
+
+<!-- ───────────── 3.0 ENGAGEMENT SUMMARY ───────────── -->
+<h1 class="sec">3.0 Engagement Summary</h1>
+<h2 class="sub">3.1 Project Overview</h2>
+<p>The organization <strong>{{ report.client_name }}</strong> enlisted <strong>IARM Information Security</strong> for a <strong>Web Application Penetration Test</strong> against <strong>{{ report.application_name }}</strong>. Assessment period: <strong>{{ report.assessment_startdate | fmt_date }}</strong> to <strong>{{ report.assessment_enddate | fmt_date }}</strong>.</p>
+
+<h3 class="sub2">Scope Centre</h3>
+<table>
+  <thead><tr><th>Property</th><th>Details</th></tr></thead>
+  <tbody>
+    <tr><td class="lbl">Application</td><td>{{ report.application_name }}</td></tr>
+    <tr><td class="lbl">Version</td><td>{{ report.application_version }}</td></tr>
+    <tr><td class="lbl">Approach</td><td>{{ report.application_approach }}</td></tr>
+    <tr><td class="lbl">URL(s)</td><td>{% for url in report.application_url if url %}<a href="{{ url }}">{{ url }}</a><br>{% endfor %}</td></tr>
+  </tbody>
+</table>
+
+<h2 class="sub">3.2 Goals</h2>
+<ul>
+  <li><strong>Identify and assess vulnerabilities:</strong> Thorough examination to uncover security weaknesses.</li>
+  <li><strong>Exploit and validate findings:</strong> Actively exploit vulnerabilities to confirm existence and severity.</li>
+  <li><strong>Provide remediation recommendations:</strong> Actionable guidance to address identified vulnerabilities.</li>
+  <li><strong>Ensure compliance and resilience:</strong> Verify compliance with security standards and build cyber resilience.</li>
+</ul>
+
+<h2 class="sub">3.3 Approach</h2>
+<p>The assessment team conducted a comprehensive <strong>Penetration Test</strong> leveraging real-world attack techniques. The engagement began with automated scanning followed by meticulous manual analysis. Tools used: <strong>Nessus Professional</strong>, <strong>Kali Linux</strong>, <strong>Postman</strong>, <strong>Nmap Scripts</strong>, and <strong>Burp Suite Professional</strong>.</p>
+
+<h2 class="sub">3.4 Technical Summary</h2>
+<table>
+  <thead><tr><th>Property</th><th>Details</th></tr></thead>
+  <tbody>
+    <tr><td class="lbl">Project ID</td><td>{{ report.project_id }}</td></tr>
+    <tr><td class="lbl">Time Frame</td><td>{{ report.assessment_startdate | fmt_date_short }} to {{ report.assessment_enddate | fmt_date_short }}</td></tr>
+    <tr><td class="lbl">Engagement Type</td><td>{{ report.application_approach }}</td></tr>
+    <tr><td class="lbl">Report Date</td><td>{{ report.report_delivery_date | fmt_date_short }}</td></tr>
+  </tbody>
+</table>
+
+<h3 class="sub2">3.4.1 Out of Scope</h3>
+<ul>
+  {% for item in report.outofscope if item %}
+  <li>{{ item }}</li>
+  {% endfor %}
+  <li>Fixing or remediation of identified vulnerabilities is not part of this engagement.</li>
+  <li>Post-incident analysis and log review assessments are not included.</li>
+  <li>Third-party services and microservices are excluded.</li>
+</ul>
+
+<h3 class="sub2">3.4.2 Reassessment</h3>
+<p>A one-time retest is optional. Any retest not conducted within <strong>{{ report.reassessment }}</strong> from the initial report date will be considered a <strong>Fresh Audit</strong>.</p>
+
+<!-- ───────────── 4.0 FINDINGS DASHBOARD ───────────── -->
+<h1 class="sec">4.0 Findings Dashboard</h1>
+<p>Each finding is evaluated using the IARM Risk Score methodology considering severity, exploitability, exposure, and business risk.</p>
+<table>
+  <thead><tr><th>Vulnerability</th><th style="width:120px">Criticality</th></tr></thead>
+  <tbody>
+    {% for f in findings %}
+    <tr>
+      <td>{{ f.title }}</td>
+      <td class="sev-{{ f.cvss.level }}" style="text-align:center">{{ f.cvss.level | capitalize }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<div class="risk-strip">
+  <div class="risk-box" style="background:#e60000;color:#fff"><span class="num">{{ finding_stats.count_critical }}</span><span class="lbl">Critical</span></div>
+  <div class="risk-box" style="background:#ff7a00;color:#fff"><span class="num">{{ finding_stats.count_high }}</span><span class="lbl">High</span></div>
+  <div class="risk-box" style="background:#ffcc00;color:#000"><span class="num">{{ finding_stats.count_medium }}</span><span class="lbl">Medium</span></div>
+  <div class="risk-box" style="background:#6b1c4f;color:#fff"><span class="num">{{ finding_stats.count_low }}</span><span class="lbl">Low</span></div>
+  <div class="risk-box" style="background:#6e6e6e;color:#fff"><span class="num">{{ finding_stats.count_info }}</span><span class="lbl">Info</span></div>
+</div>
+
+<!-- ───────────── 5.0 FINDINGS SUMMARY ───────────── -->
+<h1 class="sec">5.0 Findings Summary</h1>
+{% for f in findings %}
+<div style="margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #ddd">
+  <strong>{{ loop.index }}. {{ f.title }}</strong>
+  <span class="sev-{{ f.cvss.level }}" style="padding:2px 8px;border-radius:3px;font-size:10px;margin-left:8px">{{ f.cvss.level | capitalize }}</span>
+  {% if f.summary %}<p style="margin-top:6px;color:#444">{{ f.summary }}</p>{% endif %}
+</div>
+{% endfor %}
+
+<!-- ───────────── 6.0 ASSESSMENT REPORT ───────────── -->
+<h1 class="sec">6.0 Assessment Report</h1>
+<p>The vulnerabilities below were identified and verified by IARM Information Security during this Penetration Testing engagement.</p>
+
+{% for f in findings %}
+<div class="finding-block" id="{{ f.id }}">
+  <h2 class="finding-title">6.{{ loop.index }} {{ f.title }}</h2>
+
+  <table>
+    <thead><tr><th>Risk Level</th><th>Ease of Exploit</th><th>CWE</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="sev-{{ f.cvss.level }}">{{ f.cvss.level | capitalize }}</td>
+        <td class="ease-{{ f.ease | lower }}">{{ f.ease or 'Moderate' }}</td>
+        <td style="text-align:center">{{ f.cwe or 'N/A' }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  {% if f.description %}
+  <p class="section-label">Description</p>
+  <div class="desc-block">{{ f.description | md }}</div>
+  {% endif %}
+
+  {% if f.cvss.score %}
+  <div class="cvss-container">
+    <strong style="font-size:13px">CVSS Score: </strong>
+    <span class="cvss-badge sev-{{ f.cvss.level }}">
+      {% if f.cvss.vector and f.cvss.vector.startswith('CVSS:3') %}
+        <a href="https://www.first.org/cvss/calculator/3.1#{{ f.cvss.vector }}" target="_blank">
+          {{ f.cvss.score }} — {{ f.cvss.vector }}
+        </a>
+      {% else %}
+        {{ f.cvss.score }}{% if f.cvss.vector %} — {{ f.cvss.vector }}{% endif %}
+      {% endif %}
+    </span>
+  </div>
+  {% endif %}
+
+  {% if f.impact %}
+  <p class="section-label">Business Impact</p>
+  <div>{{ f.impact | md }}</div>
+  {% endif %}
+
+  {% if f.affected_components %}
+  <p class="section-label">Affected Components</p>
+  <ul>{% for c in f.affected_components %}<li>{{ c }}</li>{% endfor %}</ul>
+  {% endif %}
+
+  {% if f.payload %}
+  <p class="section-label">Payload</p>
+  <div class="payload-block">{% for p in f.payload %}<code>{{ p }}</code>{% endfor %}</div>
+  {% endif %}
+
+  {% if f.poc %}
+  <p class="section-label">Proof of Concept</p>
+  <pre class="poc-block">{{ f.poc }}</pre>
+  {% endif %}
+
+  {% if f.evidence_images %}
+  <p class="section-label">Evidence / Screenshots</p>
+  <div style="margin:10px 0">
+    {% for img in f.evidence_images %}
+    <img src="{{ img }}" alt="Evidence" style="max-width:100%; border:1px solid #ccc; border-radius:4px; margin-bottom:12px; display:block">
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if f.recommendation %}
+  <p class="section-label">Recommendation</p>
+  <div>{{ f.recommendation | md }}</div>
+  {% endif %}
+
+  {% if f.references %}
+  <p class="section-label">References</p>
+  <ul>{% for r in f.references %}<li><a href="{{ r }}">{{ r }}</a></li>{% endfor %}</ul>
+  {% endif %}
+</div>
+{% endfor %}
+
+<!-- ───────────── 7.0 CONCLUSION ───────────── -->
+<h1 class="sec">7.0 Conclusion</h1>
+<p>The Web Application Penetration Testing for <strong>{{ report.application_name or "the application" }}</strong> has been completed as per the defined scope. All identified vulnerabilities require remediation at the earliest to mitigate the risk of potential malicious exploitation.</p>
+<p>Information Security Assessment is a continuous practice essential to maintaining overall security posture. It is strongly recommended to conduct security assessments on a <strong>quarterly basis</strong> to ensure ongoing protection against evolving cyber threats.</p>
+
+<!-- ───────────── 8.0 APPENDIX ───────────── -->
+<h1 class="sec">8.0 Appendix</h1>
+<h2 class="sub">8.1 Disclaimer</h2>
+<p>The Penetration Testing was conducted by IARM Information Security Pvt Ltd using open source and commercial off-the-shelf tools as per the defined and agreed scope of work. No application can ever be 100% secure regardless of testing conducted. The service provider shall take all reasonable steps to provide accurate results but cannot be held liable if testing fails to discover all vulnerabilities.</p>
+
+<h2 class="sub">8.2 OWASP Web Security Top 10 (2025)</h2>
+<ul>
+  <li>A01:2025 – Broken Access Control</li>
+  <li>A02:2025 – Security Misconfiguration</li>
+  <li>A03:2025 – Software Supply Chain Failures</li>
+  <li>A04:2025 – Cryptographic Failures</li>
+  <li>A05:2025 – Injection</li>
+  <li>A06:2025 – Insecure Design</li>
+  <li>A07:2025 – Authentication Failures</li>
+  <li>A08:2025 – Software or Data Integrity Failures</li>
+  <li>A09:2025 – Security Logging & Alerting Failures</li>
+  <li>A10:2025 – Mishandling of Exceptional Conditions</li>
+</ul>
+
+<p style="text-align:center;color:#888;font-size:10px;margin-top:40px;padding-top:16px;border-top:1px solid #ddd">
+  Generated by VAPT Report Automation System · IARM Information Security · {{ generated_at }}
+</p>
+</body>
+</html>

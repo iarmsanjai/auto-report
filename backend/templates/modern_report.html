@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>VAPT Report — {{ report.client_name }}</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;700&display=swap');
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Exo 2', sans-serif; font-size: 12px; color: #c9d1d9; background: #070b0f; padding: 32px 44px; max-width: 960px; margin: 0 auto; line-height: 1.7; }
+a { color: #00d4ff; }
+
+/* ── Headings ── */
+h1.sec { font-family: 'Orbitron', sans-serif; font-size: 16px; font-weight: 700; color: #00d4ff; border-bottom: 1px solid #00d4ff44; padding-bottom: 6px; margin: 36px 0 16px; letter-spacing: 2px; }
+h1.sec::before { content: "// "; opacity: .5; }
+h2.sub { font-size: 14px; font-weight: 600; margin: 18px 0 8px; color: #e6edf3; }
+h3.sub2 { font-size: 12px; font-weight: 600; margin: 12px 0 6px; color: #8b949e; letter-spacing: .5px; }
+p { margin-bottom: 8px; font-size: 12px; line-height: 1.7; }
+ul { padding-left: 20px; margin: 6px 0 10px; }
+li { font-size: 12px; line-height: 1.6; margin-bottom: 4px; }
+code { font-family: 'Share Tech Mono', monospace; background: #0d1117; border: 1px solid #30363d; padding: 2px 6px; border-radius: 3px; font-size: 11px; color: #a0ffa0; }
+pre { font-family: 'Share Tech Mono', monospace; background: #0d1117; border: 1px solid #1e2d3d; padding: 14px; border-radius: 6px; font-size: 11px; overflow-x: auto; white-space: pre-wrap; margin: 10px 0; color: #a0ffa0; }
+strong { color: #e6edf3; }
+
+/* ── Tables ── */
+table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 11px; }
+th { background: #00d4ff18; color: #00d4ff; border: 1px solid #00d4ff33; padding: 8px 10px; text-align: center; font-weight: 600; letter-spacing: .5px; }
+td { border: 1px solid #1e2d3d; padding: 7px 10px; vertical-align: top; }
+td.lbl { background: #0d111788; color: #8b949e; font-weight: 600; width: 28%; }
+tbody tr:nth-child(even) { background: #0d111750; }
+
+/* ── Cover ── */
+.cover { text-align: left; padding: 80px 44px; background: linear-gradient(135deg, #050a14 0%, #0d1830 100%); margin: -32px -44px 48px; border-bottom: 2px solid #00d4ff33; position: relative; overflow: hidden; }
+.cover::before { content: "VAPT"; position: absolute; right: -20px; top: 50%; transform: translateY(-50%); font-family: 'Orbitron', sans-serif; font-size: 160px; font-weight: 700; opacity: .04; color: #00d4ff; line-height: 1; }
+.cover .tagline { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: #00d4ff; letter-spacing: 3px; margin-bottom: 16px; }
+.cover h1 { font-family: 'Orbitron', sans-serif; font-size: 26px; font-weight: 700; color: #fff; line-height: 1.3; margin-bottom: 24px; }
+.cover .meta-row { font-size: 12px; color: #8b949e; margin: 6px 0; }
+.cover .meta-row span { color: #e6edf3; }
+.cover .date-badge { display: inline-block; background: #00d4ff18; border: 1px solid #00d4ff44; border-radius: 4px; padding: 4px 12px; font-family: 'Share Tech Mono', monospace; font-size: 11px; color: #00d4ff; margin-bottom: 20px; }
+
+/* ── Severity ── */
+.sev-critical { background: #e6000022; color: #ff6666; border: 1px solid #e6000066; font-weight: 700; text-align: center; }
+.sev-high     { background: #ff7a0022; color: #ffa066; border: 1px solid #ff7a0066; font-weight: 700; text-align: center; }
+.sev-medium   { background: #ffcc0022; color: #ffdd66; border: 1px solid #ffcc0066; font-weight: 700; text-align: center; }
+.sev-low      { background: #9f7aea22; color: #c4a1ff; border: 1px solid #9f7aea66; font-weight: 700; text-align: center; }
+.sev-info     { background: #6e6e6e22; color: #aaa; border: 1px solid #6e6e6e66; font-weight: 700; text-align: center; }
+
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: .5px; }
+.badge-critical { background: #e60000; color: #fff; }
+.badge-high     { background: #ff7a00; color: #fff; }
+.badge-medium   { background: #ffcc00; color: #000; }
+.badge-low      { background: #6b1c4f; color: #fff; }
+.badge-info     { background: #6e6e6e; color: #fff; }
+
+/* ── Text Color ── */
+.txt-critical { color: #e60000; }
+.txt-high     { color: #ff7a00; }
+.txt-medium   { color: #ffcc00; }
+.txt-low      { color: #6b1c4f; }
+.txt-info     { color: #6e6e6e; }
+
+/* ── Risk strip ── */
+.risk-strip { display: flex; margin: 20px 0; gap: 4px; }
+.risk-box { flex: 1; padding: 18px 10px; text-align: center; font-weight: 700; border-radius: 4px; border: 1px solid; }
+.risk-box .num { font-family: 'Orbitron', sans-serif; font-size: 36px; display: block; line-height: 1; }
+.risk-box .lbl { font-size: 10px; margin-top: 6px; letter-spacing: 1px; }
+.rb-critical { background: #e6000015; border-color: #e60000; color: #ff6666; }
+.rb-high     { background: #ff7a0015; border-color: #ff7a00; color: #ffa066; }
+.rb-medium   { background: #ffcc0015; border-color: #ffcc00; color: #ffdd66; }
+.rb-low      { background: #9f7aea15; border-color: #9f7aea; color: #c4a1ff; }
+.rb-info     { background: #6e6e6e15; border-color: #6e6e6e; color: #aaa; }
+
+/* ── Finding block ── */
+.finding-block { margin-bottom: 40px; border: 1px solid #1e2d3d; border-radius: 8px; overflow: hidden; }
+.finding-header { padding: 14px 18px; background: #0d1117; border-bottom: 1px solid #1e2d3d; }
+.finding-num { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: #00d4ff; letter-spacing: 2px; }
+.finding-title-text { font-size: 15px; font-weight: 700; color: #e6edf3; margin-top: 4px; }
+.finding-body { padding: 18px; }
+.section-label { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: #00d4ff; letter-spacing: 2px; margin: 18px 0 8px; }
+.desc-block { background: #0d1117; border-left: 2px solid #00d4ff44; padding: 12px 16px; border-radius: 0 4px 4px 0; color: #c9d1d9; }
+.payload-block { font-family: 'Share Tech Mono', monospace; }
+.payload-block code { display: block; background: #0d1117; border-left: 2px solid #ff7a0055; margin: 4px 0; padding: 5px 12px; color: #ffa066; }
+.cvss-line { margin: 12px 0; display: flex; align-items: center; gap: 10px; }
+.cvss-score { font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight: 700; }
+
+@media print {
+  body { background: #fff; color: #222; padding: 20px; }
+  .cover { background: #050a14 !important; page-break-after: always; }
+  .finding-block { border-color: #ccc; page-break-inside: avoid; }
+  pre { background: #f4f4f4 !important; color: #333 !important; border-color: #ccc; }
+  .sev-critical,.sev-high,.sev-medium,.sev-low,.sev-info { border: 1px solid #ccc; }
+}
+</style>
+</head>
+<body>
+
+<!-- ───────────── COVER ───────────── -->
+<div class="cover">
+  <div class="tagline">IARM INFORMATION SECURITY // CONFIDENTIAL</div>
+  <h1>WEB APPLICATION<br>PENETRATION TESTING<br>REPORT</h1>
+  <div class="date-badge">{{ report.report_delivery_date | fmt_date }}</div>
+  <div class="meta-row">CLIENT &nbsp;→ &nbsp;<span>{{ report.client_name or "[Client Name]" }}</span></div>
+  <div class="meta-row">APPLICATION &nbsp;→ &nbsp;<span>{{ report.application_name or "[Application]" }}</span></div>
+  <div class="meta-row">APPROACH &nbsp;→ &nbsp;<span>{{ report.application_approach }}</span></div>
+  <div class="meta-row">TESTER &nbsp;→ &nbsp;<span>{{ report.tester_name }}</span></div>
+</div>
+
+<!-- ───────────── 1.0 DOCUMENT CONTROL ───────────── -->
+<h1 class="sec">1.0 Document Control</h1>
+<table>
+  <thead><tr><th>Issue</th><th>Date</th><th>Author</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td>0.1</td><td>{{ report.basic_document_date | fmt_date_short }}</td><td>{{ report.tester_name }}</td><td>Basic Document Outline</td></tr>
+    <tr><td>0.2</td><td>{{ report.draft_document_date | fmt_date_short }}</td><td>{{ report.tester_name }}</td><td>Draft Document</td></tr>
+    <tr><td>0.3</td><td>{{ report.peer_review_date | fmt_date_short }}</td><td>{{ report.validator_name }}</td><td>Peer Review</td></tr>
+    <tr><td>1.0</td><td>{{ report.report_delivery_date | fmt_date_short }}</td><td>{{ report.validator_name }}</td><td>Released to Client</td></tr>
+  </tbody>
+</table>
+<table>
+  <thead><tr><th>Property</th><th>Details</th></tr></thead>
+  <tbody>
+    <tr><td class="lbl">Client</td><td>{{ report.client_name }}</td></tr>
+    <tr><td class="lbl">Application</td><td>{{ report.application_name }}</td></tr>
+    <tr><td class="lbl">Version</td><td>{{ report.application_version }}</td></tr>
+    <tr><td class="lbl">Project ID</td><td>{{ report.project_id }}</td></tr>
+    <tr><td class="lbl">Tester</td><td>{{ report.tester_name }}</td></tr>
+    <tr><td class="lbl">Reviewer</td><td>{{ report.validator_name }}</td></tr>
+    <tr><td class="lbl">Classification</td><td style="color:#ff6666;font-weight:700">CONFIDENTIAL — VERY HIGH</td></tr>
+  </tbody>
+</table>
+
+<!-- ───────────── 3.0 ENGAGEMENT ───────────── -->
+<h1 class="sec">3.0 Engagement Summary</h1>
+<p><strong>{{ report.client_name }}</strong> engaged IARM Information Security for a web application penetration test against <strong>{{ report.application_name }}</strong>. Assessment period: <strong>{{ report.assessment_startdate | fmt_date }}</strong> — <strong>{{ report.assessment_enddate | fmt_date }}</strong>.</p>
+<table>
+  <thead><tr><th>Property</th><th>Details</th></tr></thead>
+  <tbody>
+    <tr><td class="lbl">Approach</td><td>{{ report.application_approach }}</td></tr>
+    <tr><td class="lbl">URL(s)</td><td>{% for url in report.application_url if url %}<a href="{{ url }}">{{ url }}</a><br>{% endfor %}</td></tr>
+  </tbody>
+</table>
+
+<!-- ───────────── 4.0 FINDINGS DASHBOARD ───────────── -->
+<h1 class="sec">4.0 Findings Dashboard</h1>
+<table>
+  <thead><tr><th>Vulnerability</th><th style="width:110px">Severity</th><th style="width:80px">CVSS</th></tr></thead>
+  <tbody>
+    {% for f in findings %}
+    <tr>
+      <td>{{ f.title }}</td>
+      <td class="sev-{{ f.cvss.level }}">{{ f.cvss.level | capitalize }}</td>
+      <td style="text-align:center;font-family:'Share Tech Mono',monospace">{{ f.cvss.score or '—' }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<div class="risk-strip">
+  <div class="risk-box rb-critical"><span class="num">{{ finding_stats.count_critical }}</span><span class="lbl">CRITICAL</span></div>
+  <div class="risk-box rb-high"><span class="num">{{ finding_stats.count_high }}</span><span class="lbl">HIGH</span></div>
+  <div class="risk-box rb-medium"><span class="num">{{ finding_stats.count_medium }}</span><span class="lbl">MEDIUM</span></div>
+  <div class="risk-box rb-low"><span class="num">{{ finding_stats.count_low }}</span><span class="lbl">LOW</span></div>
+  <div class="risk-box rb-info"><span class="num">{{ finding_stats.count_info }}</span><span class="lbl">INFO</span></div>
+</div>
+
+<!-- ───────────── 6.0 ASSESSMENT REPORT ───────────── -->
+<h1 class="sec">6.0 Assessment Report</h1>
+
+{% for f in findings %}
+<div class="finding-block" id="{{ f.id }}">
+  <div class="finding-header">
+    <div class="finding-num">FINDING-{{ "%03d" | format(loop.index) }} &nbsp;·&nbsp; {{ f.cvss.level | upper }} &nbsp;·&nbsp; {{ f.cwe or 'N/A' }}</div>
+    <div class="finding-title-text">{{ f.title }}</div>
+  </div>
+  <div class="finding-body">
+
+    <table style="margin-bottom:12px">
+      <thead><tr><th>Risk Level</th><th>Ease of Exploit</th><th>CWE</th><th>CVSS Score</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="sev-{{ f.cvss.level }}">{{ f.cvss.level | capitalize }}</td>
+          <td style="text-align:center">{{ f.ease or 'Moderate' }}</td>
+          <td style="text-align:center;font-family:'Share Tech Mono',monospace">{{ f.cwe or 'N/A' }}</td>
+          <td style="text-align:center">
+            <span style="font-family:'Orbitron',sans-serif;font-size:14px;font-weight:700;" class="txt-{{ f.cvss.level }}">{{ f.cvss.score }}</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    {% if f.cvss.vector %}
+    <p style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#8b949e;margin-bottom:12px">{{ f.cvss.vector }}</p>
+    {% endif %}
+
+    {% if f.description %}
+    <div class="section-label">DESCRIPTION</div>
+    <div class="desc-block">{{ f.description | md }}</div>
+    {% endif %}
+
+    {% if f.impact %}
+    <div class="section-label">BUSINESS IMPACT</div>
+    <div>{{ f.impact | md }}</div>
+    {% endif %}
+
+    {% if f.affected_components %}
+    <div class="section-label">AFFECTED COMPONENTS</div>
+    <ul>{% for c in f.affected_components %}<li><code>{{ c }}</code></li>{% endfor %}</ul>
+    {% endif %}
+
+    {% if f.payload %}
+    <div class="section-label">PAYLOAD(S)</div>
+    <div class="payload-block">{% for p in f.payload %}<code>{{ p }}</code>{% endfor %}</div>
+    {% endif %}
+
+    {% if f.poc %}
+    <div class="section-label">PROOF OF CONCEPT</div>
+    <pre>{{ f.poc }}</pre>
+    {% endif %}
+
+    {% if f.evidence_images %}
+    <div class="section-label">EVIDENCE / SCREENSHOTS</div>
+    <div style="margin-top:10px">
+      {% for img in f.evidence_images %}
+      <img src="{{ img }}" alt="Evidence" style="max-width:100%; border:1px solid #1e2d3d; border-radius:6px; margin-bottom:12px; display:block">
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if f.recommendation %}
+    <div class="section-label">RECOMMENDATION</div>
+    <div>{{ f.recommendation | md }}</div>
+    {% endif %}
+
+    {% if f.references %}
+    <div class="section-label">REFERENCES</div>
+    <ul>{% for r in f.references %}<li><a href="{{ r }}">{{ r }}</a></li>{% endfor %}</ul>
+    {% endif %}
+  </div>
+</div>
+{% endfor %}
+
+<!-- ───────────── 7.0 CONCLUSION ───────────── -->
+<h1 class="sec">7.0 Conclusion</h1>
+<p>The penetration testing engagement for <strong>{{ report.application_name or "the application" }}</strong> has been completed. All identified vulnerabilities must be remediated at the earliest opportunity. Quarterly security assessments are strongly recommended.</p>
+
+<p style="text-align:center;color:#30363d;font-family:'Share Tech Mono',monospace;font-size:10px;margin-top:48px;padding-top:16px;border-top:1px solid #1e2d3d;letter-spacing:2px">
+  GENERATED BY VAPT REPORT AUTOMATION SYSTEM · IARM INFORMATION SECURITY · {{ generated_at }}
+</p>
+</body>
+</html>
