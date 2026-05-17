@@ -110,8 +110,17 @@ def render_report(
     available = [str(p.relative_to(settings.TEMPLATES_DIR)).replace("\\", "/")[:-5] for p in settings.TEMPLATES_DIR.glob("**/*.html")]
 
     if template_name not in available:
-        log.warning("Template '%s' not found, falling back to default_report", template_name)
-        tpl_file = "default_report.html"
+        # Try to find a matching template by basename
+        for t in available:
+            if t.endswith(f"/{template_name}") or t == template_name:
+                template_name = t
+                tpl_file = f"{template_name}.html"
+                break
+
+    if template_name not in available:
+        log.warning("Template '%s' not found, falling back to VA_template/default_report", template_name)
+        template_name = "VA_template/default_report"
+        tpl_file = f"{template_name}.html"
 
     try:
         tpl = env.get_template(tpl_file)

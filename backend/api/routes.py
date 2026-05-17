@@ -121,7 +121,7 @@ async def export_json(payload: ReportPayload):
 @router.post("/export/html", response_class=HTMLResponse)
 async def export_html(
     payload: ReportPayload,
-    template: Optional[str] = Query(default="default_report"),
+    template: Optional[str] = Query(default="VA_template/default_report"),
 ):
     """
     Render a full HTML pentest report using the specified template.
@@ -130,7 +130,7 @@ async def export_html(
     html = render_report(
         meta=payload.report,
         findings=payload.findings,
-        template_name=template or "default_report",
+        template_name=template or "VA_template/default_report",
     )
     return HTMLResponse(content=html)
 
@@ -145,7 +145,7 @@ async def preview_html(payload: ReportPayload):
 @router.post("/export/docx")
 async def export_docx(
     payload: ReportPayload,
-    template: Optional[str] = Query(default="default_report"),
+    template: Optional[str] = Query(default="VA_template/default_report"),
 ):
     """
     Export as a proper MS Word .docx file.
@@ -153,7 +153,7 @@ async def export_docx(
     html = render_report(
         meta=payload.report,
         findings=payload.findings,
-        template_name=template or "default_report",
+        template_name=template or "VA_template/default_report",
     )
     
     try:
