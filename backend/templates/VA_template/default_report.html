@@ -6,7 +6,7 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&display=swap');
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'EB Garamond', Garamond, serif; font-size: 12px; color: #222; background: #fff; padding: 30px 40px; max-width: 920px; margin: 0 auto; line-height: 1.65; }
+body { font-family: 'EB Garamond', Garamond, serif; font-size: 12px; color: #222; background: #f0f0f0; padding: 0; max-width: 210mm; margin: 0 auto; line-height: 1.65; }
 
 /* ── Section headings ── */
 h1.sec { font-size: 20px; font-weight: 700; color: #1f86d0; border-bottom: 2px solid #1f86d0; padding-bottom: 4px; margin: 32px 0 14px; }
@@ -25,18 +25,89 @@ th { background: #1f86d0; color: #fff; border: 1px solid #1f86d0; padding: 7px 1
 td { border: 1px solid #1f86d0; padding: 6px 10px; vertical-align: top; }
 td.lbl { background: #eef5fc; font-weight: 600; width: 28%; }
 tbody tr:nth-child(even) { background: #fafcff; }
+table.tbl-center td { text-align: center; vertical-align: middle; }
+table.tbl-center td.lbl { text-align: left; }
 
-/* ── Cover ── */
-.cover { text-align: center; padding: 90px 40px; background: #050a14; color: #fff; margin: -30px -40px 40px; }
-.cover h1 { font-size: 30px; font-weight: 700; margin: 14px 0; line-height: 1.3; }
-.cover .label { font-size: 14px; color: #90b8e8; margin: 8px 0 2px; }
-.cover .value { font-size: 16px; color: #fff; font-weight: 600; margin-bottom: 10px; }
-.cover .meta { font-size: 13px; color: #90b8e8; margin-top: 6px; }
+/* ── Cover — full A4 page ── */
+.cover {
+  position: relative;
+  width: 210mm;
+  height: 297mm;
+  background: url('assets/firstpage.png') no-repeat center center;
+  background-size: cover;
+  color: #fff;
+  margin: -30px -40px 40px;
+  overflow: hidden;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  page-break-after: always;
+}
+/* Text overlay — sits in the clean red lower half (~52% down) */
+.cover-body {
+  position: absolute;
+  left: 0; right: 0;
+  top: 52%;
+  padding: 0 48px;
+  text-align: left;
+}
+.cover-report-type {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.65);
+  margin-bottom: 10px;
+}
+.cover-title {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #fff;
+  margin: 0 0 28px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.cover-divider {
+  width: 48px;
+  height: 3px;
+  background: rgba(255,255,255,0.5);
+  margin-bottom: 22px;
+  border-radius: 2px;
+}
+.cover-meta-row {
+  margin-bottom: 10px;
+}
+.cover-meta-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 3px;
+}
+.cover-meta-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+}
+.cover-meta-value.client {
+  font-size: 20px;
+  font-weight: 800;
+}
+.cover-date {
+  position: absolute;
+  right: 48px;
+  bottom: 36px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.6);
+  letter-spacing: 0.5px;
+}
 
 /* ── Severity colours ── */
 .sev-critical { background: #e60000; color: #fff; font-weight: 700; text-align: center; }
 .sev-high     { background: #ff7a00; color: #fff; font-weight: 700; text-align: center; }
-.sev-medium   { background: #ffcc00; color: #000; font-weight: 700; text-align: center; }
+.sev-medium   { background: #ffcc00; color: #fff; font-weight: 700; text-align: center; }
 .sev-low      { background: #6b1c4f; color: #fff; font-weight: 700; text-align: center; }
 .sev-info     { background: #6e6e6e; color: #fff; font-weight: 700; text-align: center; }
 
@@ -65,10 +136,134 @@ tbody tr:nth-child(even) { background: #fafcff; }
 .payload-block code { display: block; background: #f0f4f8; border-left: 2px solid #1f86d055; margin: 4px 0; padding: 4px 10px; }
 .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); opacity: .03; z-index: -1; font-size: 120px; font-weight: 900; color: #1f86d0; pointer-events: none; user-select: none; }
 
+/* ── Page Header (all pages except cover) ── */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0 8px;
+  border-bottom: 2px solid #c0d8ee;
+  margin-bottom: 28px;
+}
+.page-header-logo-left  { height: 36px; width: auto; }
+.page-header-logo-right { height: 36px; width: auto; }
+
+/* ── TOC Page ── */
+.toc-page {
+  position: relative;
+  min-height: 297mm;
+  padding: 0 0 40px;
+  page-break-after: always;
+  overflow: hidden;
+  background: #fff;
+  width: 210mm;
+  margin: 0 auto 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.13);
+  box-sizing: border-box;
+}
+.toc-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.04;
+}
+.toc-watermark img {
+  width: 320px;
+  height: auto;
+}
+.toc-heading {
+  position: relative;
+  z-index: 1;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1f86d0;
+  margin: 0 0 8px;
+  letter-spacing: 0.3px;
+}
+.toc-divider {
+  width: 100%;
+  height: 2px;
+  background: #1f86d0;
+  margin-bottom: 24px;
+}
+.toc-nav {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.toc-entry {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 5px 0;
+  text-decoration: none;
+  color: #1a1a1a;
+  border-bottom: none;
+  transition: background 0.1s;
+}
+.toc-entry:hover .toc-title,
+.toc-entry:hover .toc-num { color: #1f86d0; }
+.toc-l1 { font-weight: 600; font-size: 12.5px; }
+.toc-l2 { font-weight: 400; font-size: 11.5px; padding-left: 22px; color: #333; }
+.toc-l2 .toc-num { color: #555; }
+.toc-num {
+  min-width: 34px;
+  flex-shrink: 0;
+  color: #1f86d0;
+  font-weight: 700;
+}
+.toc-title { flex-shrink: 0; }
+.toc-dots {
+  flex: 1;
+  border-bottom: 1.5px dotted #aac4dc;
+  margin: 0 6px 4px;
+  min-width: 20px;
+}
+.toc-page-num {
+  flex-shrink: 0;
+  min-width: 26px;
+  text-align: right;
+  font-weight: 700;
+  font-size: 11.5px;
+  color: #1f86d0;
+}
+.toc-l2 .toc-page-num { font-weight: 400; color: #555; }
+
+/* ── A4 content pages ── */
+.a4-page {
+  background: #fff;
+  width: 210mm;
+  min-height: 297mm;
+  padding: 18mm 20mm;
+  margin: 0 auto 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.13);
+  position: relative;
+  box-sizing: border-box;
+}
+.content-pages {
+  page-break-before: always;   /* start fresh after TOC */
+  break-before: page;
+}
+
 @media print {
-  .cover { page-break-after: always; }
+  @page { size: A4; margin: 18mm 20mm; }
+  body { background: #fff; max-width: 100%; margin: 0; padding: 0; }
+  .a4-page { box-shadow: none; margin: 0; padding: 18mm 20mm; width: 100%; }
+  .cover {
+    page-break-after: always;
+    width: 210mm;
+    height: 297mm;
+    margin: 0;
+    background: url('assets/firstpage.png') no-repeat center center !important;
+    background-size: cover !important;
+  }
+  .toc-page { page-break-after: always; }
   .finding-block { page-break-inside: avoid; }
-  body { max-width: 100%; padding: 20px 25px; }
 }
 </style>
 </head>
@@ -77,20 +272,176 @@ tbody tr:nth-child(even) { background: #fafcff; }
 
 <!-- ───────────── COVER ───────────── -->
 <div class="cover">
-  <p class="meta">{{ report.report_delivery_date | fmt_date }}</p>
-  <h1>WEB APPLICATION<br>PENETRATION TESTING REPORT</h1>
-  <p class="label">Prepared For</p>
-  <p class="value">{{ report.client_name or "[Client Name]" }}</p>
-  <p class="label">Prepared By</p>
-  <p class="value">IARM Information Security</p>
+
+  <!-- Text overlay in the clean red lower half of firstpage.png -->
+  <div class="cover-body">
+
+    <h1 class="cover-title">VULNERABILITY<br>ASSESSMENT REPORT</h1>
+
+    <div class="cover-divider"></div>
+
+    <div class="cover-meta-row">
+      <p class="cover-meta-label">Prepared For</p>
+      <p class="cover-meta-value client">{{ report.client_name or "[Client Name]" }}</p>
+    </div>
+
+    <div class="cover-meta-row" style="margin-top: 14px;">
+      <p class="cover-meta-label">Prepared By</p>
+      <p class="cover-meta-value">IARM Information Security</p>
+    </div>
+
+    <div class="cover-meta-row" style="margin-top: 14px;">
+      <p class="cover-meta-label">Report Date</p>
+      <p class="cover-meta-value">{{ report.report_delivery_date | fmt_date }}</p>
+    </div>
+
+  </div>
+
+  <!-- Date stamp bottom-right corner -->
+  <span class="cover-date">{{ report.report_delivery_date | fmt_date }}</span>
+
+</div>
+
+<!-- ───────────── TABLE OF CONTENTS (Page 2) ───────────── -->
+<div class="toc-page">
+
+  <!-- Page header: IARM logo left, CREST right -->
+  <div class="page-header">
+    <img src="assets/page2_img1.png" alt="IARM" class="page-header-logo-left">
+    <img src="assets/page2_img2.png" alt="CREST | PEN TEST" class="page-header-logo-right">
+  </div>
+
+  <!-- Faded fingerprint watermark -->
+  <div class="toc-watermark">
+    <img src="assets/watermark.png" alt="">
+  </div>
+
+  <!-- TOC title -->
+  <h2 class="toc-heading">Table of Contents</h2>
+  <div class="toc-divider"></div>
+
+  <!-- TOC entries -->
+  <nav class="toc-nav">
+
+    <a href="#doc-control" class="toc-entry toc-l1">
+      <span class="toc-num">1.0</span>
+      <span class="toc-title">Document Control</span>
+      <span class="toc-dots"></span>
+      <span class="toc-page-num" data-target="doc-control">…</span>
+    </a>
+
+    <a href="#about-us" class="toc-entry toc-l1">
+      <span class="toc-num">2.0</span>
+      <span class="toc-title">About Us</span>
+      <span class="toc-dots"></span>
+      <span class="toc-page-num" data-target="about-us">…</span>
+    </a>
+
+    <a href="#engagement" class="toc-entry toc-l1">
+      <span class="toc-num">3.0</span>
+      <span class="toc-title">Engagement Summary</span>
+      <span class="toc-dots"></span>
+      <span class="toc-page-num" data-target="engagement">…</span>
+    </a>
+    <a href="#project-overview" class="toc-entry toc-l2">
+      <span class="toc-num">3.1</span>
+      <span class="toc-title">Project Overview</span>
+      <span class="toc-dots"></span>
+      <span class="toc-page-num" data-target="project-overview">…</span>
+    </a>
+    <a href="#goals" class="toc-entry toc-l2">
+      <span class="toc-num">3.2</span>
+      <span class="toc-title">Goals</span>
+      <span class="toc-dots"></span>
+      <span class="toc-page-num" data-target="goals">…</span>
+    </a>
+    <a href="#approach" class="toc-entry toc-l2">
+      <span class="toc-num">3.3</span>
+      <span class="toc-title">Approach</span>
+      <span class="toc-dots"></span>
+      <span class="toc-page-num" data-target="approach">…</span>
+    </a>
+    <a href="#tech-summary" class="toc-entry toc-l2">
+      <span class="toc-num">3.4</span>
+      <span class="toc-title">Technical Summary</span>
+      <span class="toc-dots"></span>
+      <span class="toc-page-num" data-target="tech-summary">…</span>
+    </a>
+
+    <a href="#findings-dashboard" class="toc-entry toc-l1">
+      <span class="toc-num">4.0</span>
+      <span class="toc-title">Findings Dashboard</span>
+      <span class="toc-dots"></span>
+      <span class="toc-page-num" data-target="findings-dashboard">…</span>
+    </a>
+
+    <a href="#findings-summary" class="toc-entry toc-l1">
+      <span class="toc-num">5.0</span>
+      <span class="toc-title">Findings Summary</span>
+      <span class="toc-dots"></span>
+      <span class="toc-page-num" data-target="findings-summary">…</span>
+    </a>
+
+    <a href="#assessment-report" class="toc-entry toc-l1">
+      <span class="toc-num">6.0</span>
+      <span class="toc-title">Assessment Report</span>
+      <span class="toc-dots"></span>
+      <span class="toc-page-num" data-target="assessment-report">…</span>
+    </a>
+    {% for f in findings %}
+    <a href="#{{ f.id }}" class="toc-entry toc-l2">
+      <span class="toc-num">6.{{ loop.index }}</span>
+      <span class="toc-title">{{ f.title }}</span>
+      <span class="toc-dots"></span>
+      <span class="toc-page-num" data-target="{{ f.id }}">…</span>
+    </a>
+    {% endfor %}
+
+    <a href="#conclusion" class="toc-entry toc-l1">
+      <span class="toc-num">7.0</span>
+      <span class="toc-title">Conclusion</span>
+      <span class="toc-dots"></span>
+      <span class="toc-page-num" data-target="conclusion">…</span>
+    </a>
+
+    <a href="#appendix" class="toc-entry toc-l1">
+      <span class="toc-num">8.0</span>
+      <span class="toc-title">Appendix</span>
+      <span class="toc-dots"></span>
+      <span class="toc-page-num" data-target="appendix">…</span>
+    </a>
+    <a href="#disclaimer" class="toc-entry toc-l2">
+      <span class="toc-num">8.1</span>
+      <span class="toc-title">Disclaimer</span>
+      <span class="toc-dots"></span>
+      <span class="toc-page-num" data-target="disclaimer">…</span>
+    </a>
+    <a href="#owasp" class="toc-entry toc-l2">
+      <span class="toc-num">8.2</span>
+      <span class="toc-title">OWASP Web Security Top 10</span>
+      <span class="toc-dots"></span>
+      <span class="toc-page-num" data-target="owasp">…</span>
+    </a>
+
+  </nav>
+
+</div>
+
+<!-- ───────────── CONTENT PAGES (page 3 onwards) ───────────── -->
+<div class="a4-page content-pages">
+
+<!-- Page header on every content page -->
+<div class="page-header">
+  <img src="assets/page2_img1.png" alt="IARM" class="page-header-logo-left">
+  <img src="assets/page2_img2.png" alt="CREST | PEN TEST" class="page-header-logo-right">
 </div>
 
 <!-- ───────────── 1.0 DOCUMENT CONTROL ───────────── -->
-<h1 class="sec">1.0 Document Control</h1>
+<h1 class="sec" id="doc-control">1.0 Document Control</h1>
 <h2 class="sub">Client Confidentiality</h2>
 <p>This document contains <strong>Client Confidential information</strong> and may not be copied without written permission.</p>
 <h2 class="sub">Document Version Control</h2>
-<table>
+<table class="tbl-center">
   <thead><tr><th>Issue No</th><th>Issue Date</th><th>Issued By</th><th>Change Description</th></tr></thead>
   <tbody>
     <tr><td>0.1</td><td>{{ report.basic_document_date | fmt_date_short }}</td><td>{{ report.tester_name }}</td><td>Basic Document Outline</td></tr>
@@ -100,54 +451,91 @@ tbody tr:nth-child(even) { background: #fafcff; }
   </tbody>
 </table>
 <h2 class="sub">Project Metadata</h2>
-<table>
+<table class="tbl-center">
   <thead><tr><th>Property</th><th>Details</th></tr></thead>
   <tbody>
     <tr><td class="lbl">Client Name</td><td>{{ report.client_name }}</td></tr>
-    <tr><td class="lbl">Application Name</td><td>{{ report.application_name }}</td></tr>
-    <tr><td class="lbl">Application Version</td><td>{{ report.application_version }}</td></tr>
-    <tr><td class="lbl">Project ID</td><td>{{ report.project_id }}</td></tr>
-    <tr><td class="lbl">Testing Approach</td><td>{{ report.application_approach }}</td></tr>
+    <tr>
+      <td class="lbl">Document Title</td>
+      <td>
+        {{ report.client_name }} Vulnerability Assessment Report –
+        {% if report.report_month_year %}
+          {{ report.report_month_year }}
+        {% else %}
+          {{ report.report_delivery_date | fmt_date }}
+        {% endif %}
+      </td>
+    </tr>
+    <tr><td class="lbl">Date of Version</td><td>{{ report.report_delivery_date | fmt_date_short }}</td></tr>
     <tr><td class="lbl">Created By</td><td>{{ report.tester_name }}</td></tr>
     <tr><td class="lbl">Approved By</td><td>{{ report.validator_name }}</td></tr>
-    <tr><td class="lbl">Confidentiality Level</td><td>Very High</td></tr>
+    <tr><td class="lbl">Confidentiality Level</td><td>High</td></tr>
   </tbody>
 </table>
+
 
 <!-- ───────────── 2.0 ABOUT US ───────────── -->
-<h1 class="sec">2.0 About Us</h1>
-<p><strong>IARM</strong> is a distinguished cyber security organization that provides an extensive array of cyber security assessment capabilities and services tailored to meet each client's specific needs.</p>
-<p>IARM holds <strong>CREST accreditation</strong> for penetration testing services — a prestigious recognition of our dedication to delivering the highest levels of security testing. We are proud to have met and surpassed these stringent benchmarks.</p>
-<p><strong>Countries:</strong> USA | India | Singapore &nbsp;|&nbsp; <strong>Website:</strong> <a href="https://www.iarminfo.com">www.iarminfo.com</a> &nbsp;|&nbsp; <strong>Email:</strong> info@iarminfo.com</p>
+<h1 class="sec" id="about-us" style="page-break-before: always; break-before: page;">2.0 About Us</h1>
+
+<!-- Three-logo banner: IARM | CREST | PEN TEST -->
+<div style="text-align: center; margin: 24px 0 28px;">
+  <img src="assets/page4_img4.jpeg" alt="IARM | CREST | PEN TEST"
+       style="max-width: 72%; height: auto; display: inline-block;">
+</div>
+
+<p><strong>IARM</strong> is a distinguished cyber security organization that provides an extensive array of cyber security assessment capabilities and services tailored to meet each client's specific needs. Whether it's developing a comprehensive cyber security strategy or implementing tailored solutions that align with an organization's size and requirements, IARM possesses the expertise, skills, and experience necessary to safeguard against potential threats and vulnerabilities effectively.</p>
+
+<p>IARM holds <strong>CREST accreditation</strong> for penetration testing services — a prestigious recognition of our dedication to delivering the highest levels of security testing. CREST is a globally respected authority known for its rigorous certification standards, and we are proud to have not only met but surpassed these stringent benchmarks.</p>
+
+<!-- Contact details block -->
+<div style="margin-top: 28px; border-top: 1px solid #dde8f0; padding-top: 14px; font-size: 12px; line-height: 1.9; color: #222;">
+  <p style="margin: 0;"><strong>Country:</strong> USA &nbsp;|&nbsp; India &nbsp;|&nbsp; Singapore</p>
+  <p style="margin: 0;"><strong>Website:</strong> <a href="https://www.iarminfo.com">https://www.iarminfo.com</a></p>
+  <p style="margin: 0;"><strong>Email:</strong> info@iarminfo.com</p>
+  <p style="margin: 0;"><strong>US:</strong> +1 5312422780 &nbsp;|&nbsp; <strong>India:</strong> 1800 102 1532</p>
+</div>
 
 <!-- ───────────── 3.0 ENGAGEMENT SUMMARY ───────────── -->
-<h1 class="sec">3.0 Engagement Summary</h1>
-<h2 class="sub">3.1 Project Overview</h2>
-<p>The organization <strong>{{ report.client_name }}</strong> enlisted <strong>IARM Information Security</strong> for a <strong>Web Application Penetration Test</strong> against <strong>{{ report.application_name }}</strong>. Assessment period: <strong>{{ report.assessment_startdate | fmt_date }}</strong> to <strong>{{ report.assessment_enddate | fmt_date }}</strong>.</p>
+<h1 class="sec" id="engagement" style="page-break-before: always; break-before: page;">3.0 Engagement Summary</h1>
+
+<h2 class="sub" id="project-overview">3.1 Project Overview</h2>
+<p>The organization <strong>{{ report.client_name }}</strong> enlisted <strong>IARM Information Security</strong> for a <strong>Vulnerability Assessment</strong> against their in-house developed <strong>{{ report.application_name or "Health Care Application" }}</strong> ({{ report.application_approach or report.assessment_type or "Application" }}) application. This report comprehensively outlines the vulnerabilities identified throughout the engagement, which commenced from <strong>{{ report.assessment_startdate | fmt_date }}</strong> to <strong>{{ report.assessment_enddate | fmt_date }}</strong>.</p>
 
 <h3 class="sub2">Scope Centre</h3>
-<table>
+<table class="tbl-center">
   <thead><tr><th>Property</th><th>Details</th></tr></thead>
   <tbody>
-    <tr><td class="lbl">Application</td><td>{{ report.application_name }}</td></tr>
-    <tr><td class="lbl">Version</td><td>{{ report.application_version }}</td></tr>
-    <tr><td class="lbl">Approach</td><td>{{ report.application_approach }}</td></tr>
-    <tr><td class="lbl">URL(s)</td><td>{% for url in report.application_url if url %}<a href="{{ url }}">{{ url }}</a><br>{% endfor %}</td></tr>
+    <tr><td class="lbl">Project ID</td><td>{{ report.project_id }}</td></tr>
+    <tr><td class="lbl">Assessment Type</td><td>{{ report.application_approach or "Internal/External" }}</td></tr>
+    <tr><td class="lbl">Time Frame</td><td>{{ report.assessment_startdate | fmt_date }} – {{ report.assessment_enddate | fmt_date }}</td></tr>
+    <tr><td class="lbl">Report Date</td><td>{{ report.report_delivery_date | fmt_date }}</td></tr>
+    <tr><td class="lbl">Scoped IPs Count</td><td>{{ report.scoped_ips_count or "—" }}</td></tr>
   </tbody>
 </table>
 
-<h2 class="sub">3.2 Goals</h2>
+<h2 class="sub" id="goals">3.2 Goals</h2>
 <ul>
-  <li><strong>Identify and assess vulnerabilities:</strong> Thorough examination to uncover security weaknesses.</li>
-  <li><strong>Exploit and validate findings:</strong> Actively exploit vulnerabilities to confirm existence and severity.</li>
-  <li><strong>Provide remediation recommendations:</strong> Actionable guidance to address identified vulnerabilities.</li>
-  <li><strong>Ensure compliance and resilience:</strong> Verify compliance with security standards and build cyber resilience.</li>
+  <li><strong>Identify and assess vulnerabilities:</strong> Perform automated scans on in-scope assets such as firewalls, servers, desktops, laptops, and network devices to identify known vulnerabilities and security gaps.</li>
+  <li><strong>Validate and Prioritize findings:</strong> Analyze scan results to confirm relevant vulnerabilities and determine their potential impact on the infrastructure.</li>
+  <li><strong>Provide recommendations for mitigation:</strong> Suggest appropriate remediation measures to address identified vulnerabilities and improve the security posture of the assessed systems.</li>
+  <li><strong>Ensure compliance and resilience:</strong> Support the organization in strengthening its infrastructure security and aligning with applicable security standards and best practices.</li>
 </ul>
 
-<h2 class="sub">3.3 Approach</h2>
-<p>The assessment team conducted a comprehensive <strong>Penetration Test</strong> leveraging real-world attack techniques. The engagement began with automated scanning followed by meticulous manual analysis. Tools used: <strong>Nessus Professional</strong>, <strong>Kali Linux</strong>, <strong>Postman</strong>, <strong>Nmap Scripts</strong>, and <strong>Burp Suite Professional</strong>.</p>
+<h2 class="sub" id="approach">3.3 Approach</h2>
+<p>IARM Information Security Pvt. Ltd. conducted a <strong>Vulnerability Assessment</strong> covering selected in-scope assets, which may include firewalls, servers, desktops, laptops, and other network devices, as approved by the client.</p>
+<p>The assessment was performed using automated scanning techniques to identify potential vulnerabilities, misconfigurations, and exposed services across the identified systems. The objective was to provide a high-level overview of the security posture of the environment by detecting known vulnerabilities affecting the underlying infrastructure.</p>
+<p>The scanning activities were carried out in a controlled manner within the production environment, ensuring minimal impact on business operations.</p>
+<p>The assessment approach broadly included:</p>
+<ul>
+  <li>Identification of in-scope systems and devices</li>
+  <li>Execution of automated vulnerability scans across selected assets</li>
+  <li>Detection of known vulnerabilities and security gaps</li>
+  <li>Consolidation of findings for reporting and risk visibility</li>
+  <li>Recommendation of remediation measures to address identified issues</li>
+</ul>
+<p>This approach provided a baseline understanding of the security risks associated with the assessed infrastructure components.</p>
 
-<h2 class="sub">3.4 Technical Summary</h2>
+<h2 class="sub" id="tech-summary">3.4 Technical Summary</h2>
 <table>
   <thead><tr><th>Property</th><th>Details</th></tr></thead>
   <tbody>
@@ -171,8 +559,9 @@ tbody tr:nth-child(even) { background: #fafcff; }
 <h3 class="sub2">3.4.2 Reassessment</h3>
 <p>A one-time retest is optional. Any retest not conducted within <strong>{{ report.reassessment }}</strong> from the initial report date will be considered a <strong>Fresh Audit</strong>.</p>
 
+
 <!-- ───────────── 4.0 FINDINGS DASHBOARD ───────────── -->
-<h1 class="sec">4.0 Findings Dashboard</h1>
+<h1 class="sec" id="findings-dashboard">4.0 Findings Dashboard</h1>
 <p>Each finding is evaluated using the IARM Risk Score methodology considering severity, exploitability, exposure, and business risk.</p>
 <table>
   <thead><tr><th>Vulnerability</th><th style="width:120px">Criticality</th></tr></thead>
@@ -194,7 +583,7 @@ tbody tr:nth-child(even) { background: #fafcff; }
 </div>
 
 <!-- ───────────── 5.0 FINDINGS SUMMARY ───────────── -->
-<h1 class="sec">5.0 Findings Summary</h1>
+<h1 class="sec" id="findings-summary">5.0 Findings Summary</h1>
 {% for f in findings %}
 <div style="margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #ddd">
   <strong>{{ loop.index }}. {{ f.title }}</strong>
@@ -204,7 +593,7 @@ tbody tr:nth-child(even) { background: #fafcff; }
 {% endfor %}
 
 <!-- ───────────── 6.0 ASSESSMENT REPORT ───────────── -->
-<h1 class="sec">6.0 Assessment Report</h1>
+<h1 class="sec" id="assessment-report">6.0 Assessment Report</h1>
 <p>The vulnerabilities below were identified and verified by IARM Information Security during this Penetration Testing engagement.</p>
 
 {% for f in findings %}
@@ -284,16 +673,16 @@ tbody tr:nth-child(even) { background: #fafcff; }
 {% endfor %}
 
 <!-- ───────────── 7.0 CONCLUSION ───────────── -->
-<h1 class="sec">7.0 Conclusion</h1>
+<h1 class="sec" id="conclusion">7.0 Conclusion</h1>
 <p>The Web Application Penetration Testing for <strong>{{ report.application_name or "the application" }}</strong> has been completed as per the defined scope. All identified vulnerabilities require remediation at the earliest to mitigate the risk of potential malicious exploitation.</p>
 <p>Information Security Assessment is a continuous practice essential to maintaining overall security posture. It is strongly recommended to conduct security assessments on a <strong>quarterly basis</strong> to ensure ongoing protection against evolving cyber threats.</p>
 
 <!-- ───────────── 8.0 APPENDIX ───────────── -->
-<h1 class="sec">8.0 Appendix</h1>
-<h2 class="sub">8.1 Disclaimer</h2>
+<h1 class="sec" id="appendix">8.0 Appendix</h1>
+<h2 class="sub" id="disclaimer">8.1 Disclaimer</h2>
 <p>The Penetration Testing was conducted by IARM Information Security Pvt Ltd using open source and commercial off-the-shelf tools as per the defined and agreed scope of work. No application can ever be 100% secure regardless of testing conducted. The service provider shall take all reasonable steps to provide accurate results but cannot be held liable if testing fails to discover all vulnerabilities.</p>
 
-<h2 class="sub">8.2 OWASP Web Security Top 10 (2025)</h2>
+<h2 class="sub" id="owasp">8.2 OWASP Web Security Top 10 (2025)</h2>
 <ul>
   <li>A01:2025 – Broken Access Control</li>
   <li>A02:2025 – Security Misconfiguration</li>
@@ -310,5 +699,50 @@ tbody tr:nth-child(even) { background: #fafcff; }
 <p style="text-align:center;color:#888;font-size:10px;margin-top:40px;padding-top:16px;border-top:1px solid #ddd">
   Generated by VAPT Report Automation System · IARM Information Security · {{ generated_at }}
 </p>
+
+</div><!-- /.a4-page.content-pages -->
+
+<script>
+// ── Auto TOC page numbers ────────────────────────────────────────────────────────
+// A4 at 96 DPI = 794 × 1122.5 px
+// The document flows as: Cover (297mm) → TOC (297mm) → content (A4 chunks)
+(function updateTOCPageNumbers() {
+  var A4_PX = 1122;   // 297mm at 96dpi
+
+  // Heights of the fixed pages before real content begins
+  var cover = document.querySelector('.cover');
+  var toc   = document.querySelector('.toc-page');
+
+  var coverH = cover ? cover.offsetHeight : A4_PX;
+  var tocH   = toc   ? toc.offsetHeight   : A4_PX;
+  var contentStart = coverH + tocH;
+
+  // Effective A4 content height (page height minus top+bottom margins ~36mm)
+  var CONTENT_H = A4_PX - 136; // approx body padding on each page
+
+  function pageOf(el) {
+    if (!el) return '?';
+    var top = el.getBoundingClientRect().top + window.pageYOffset;
+    if (top < coverH)                    return 1;  // cover
+    if (top < coverH + tocH)             return 2;  // toc
+    var offset = top - contentStart;
+    return 3 + Math.floor(offset / CONTENT_H);
+  }
+
+  function run() {
+    document.querySelectorAll('.toc-page-num[data-target]').forEach(function(span) {
+      var id  = span.getAttribute('data-target');
+      var el  = document.getElementById(id);
+      span.textContent = pageOf(el);
+    });
+  }
+
+  // Run after full layout (fonts, images loaded)
+  if (document.readyState === 'complete') { run(); }
+  else { window.addEventListener('load', run); }
+  // Also recalc on window resize
+  window.addEventListener('resize', run);
+})();
+</script>
 </body>
 </html>

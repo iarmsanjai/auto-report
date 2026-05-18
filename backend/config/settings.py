@@ -1,7 +1,14 @@
+import secrets
+import logging
 from pydantic_settings import BaseSettings
 from pathlib import Path
 
+log = logging.getLogger(__name__)
+
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Sentinel used to detect a missing / unset SECRET_KEY
+_INSECURE_DEFAULT = "vapt-secret-key-CHANGE-IN-PRODUCTION-abc123xyz"
 
 
 class Settings(BaseSettings):
@@ -10,7 +17,9 @@ class Settings(BaseSettings):
     DEBUG: bool = True
 
     # ── Auth ──────────────────────────────────────────────────────────────────
-    SECRET_KEY: str = "vapt-secret-key-CHANGE-IN-PRODUCTION-abc123xyz"
+    # Must be set in backend/.env — never commit a real secret to source control.
+    # Generate one with:  python -c "import secrets; print(secrets.token_hex(32))"
+    SECRET_KEY: str = _INSECURE_DEFAULT
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_MINUTES: int = 480  # 8 hours
 
@@ -41,8 +50,24 @@ class Settings(BaseSettings):
         "info": "#6e6e6e",
     }
 
+    # Reads from backend/.env automatically (pydantic-settings)
     model_config = {"env_file": ".env", "extra": "ignore"}
 
 
 settings = Settings()
 settings.UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+# ── Secret key safety checks ─────────────────────────────────────────────────
+if settings.SECRET_KEY == _INSECURE_DEFAULT:
+    if not settings.DEBUG:
+        # Hard-stop in production — do NOT allow the placeholder key
+        raise RuntimeError(
+            "SECRET_KEY is still set to the insecure default value. "
+            "Set a strong SECRET_KEY in backend/.env before running in production. "
+            "Generate one with:  python -c \"import secrets; print(secrets.token_hex(32))\""
+        )
+    else:
+        log.warning(
+            "⚠️  SECRET_KEY is using the insecure default value. "
+            "Set SECRET_KEY in backend/.env for any real deployment."
+        )

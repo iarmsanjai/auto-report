@@ -14,7 +14,7 @@ function computeStats(findings) {
 }
 
 const SEV_COLORS = { critical: '#e60000', high: '#ff7a00', medium: '#ffcc00', low: '#6b1c4f', info: '#6e6e6e' }
-const SEV_TEXT   = { critical: '#fff', high: '#fff', medium: '#000', low: '#fff', info: '#fff' }
+const SEV_TEXT   = { critical: '#fff', high: '#fff', medium: '#fff', low: '#fff', info: '#fff' }
 
 export default function ReportPreview({ findings, meta, toast, authUser, currentReportId, currentReportStatus, setCurrentReportStatus }) {
   const [loading, setLoading]   = useState(false)

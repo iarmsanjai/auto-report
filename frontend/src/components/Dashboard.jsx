@@ -86,7 +86,7 @@ export default function Dashboard({ findings, meta, setPage, onLoadSample }) {
                     justifyContent: 'center',
                     fontSize: 10,
                     fontWeight: 700,
-                    color: s.key === 'medium' ? '#000' : '#fff',
+                    color: s.key === 'medium' ? '#fff' : '#fff',
                     transition: 'width 0.3s',
                   }}
                 >

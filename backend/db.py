@@ -29,7 +29,8 @@ def save_report(report_id: str, username: str, client_name: str, project_id: str
                 client_name=excluded.client_name,
                 project_id=excluded.project_id,
                 updated_at=excluded.updated_at,
-                data=excluded.data
+                data=excluded.data,
+                status=excluded.status
         ''', (report_id, username, client_name, project_id, datetime.utcnow().isoformat(), json.dumps(data), status))
 
 def update_report_status(report_id: str, status: str):

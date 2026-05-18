@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 SEV_COLORS = {
     "critical": ("#e60000", "#ffffff"),
     "high":     ("#ff7a00", "#ffffff"),
-    "medium":   ("#ffcc00", "#000000"),
+    "medium":   ("#ffcc00", "#ffffff"),
     "low":      ("#6b1c4f", "#ffffff"),
     "info":     ("#6e6e6e", "#ffffff"),
 }
