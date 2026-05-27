@@ -92,6 +92,14 @@ def _build_finding(row: pd.Series, field_map: dict, df_cols_lower: dict) -> Find
     # Payloads from poc field if present
     poc = get("poc")
 
+    port = get("port")
+    protocol = get("protocol")
+    port_protocol = ""
+    if port and protocol:
+        port_protocol = f"{port}/{protocol}"
+    elif port or protocol:
+        port_protocol = port or protocol
+
     return Finding(
         id=str(uuid.uuid4())[:8],
         title=title,
@@ -113,6 +121,7 @@ def _build_finding(row: pd.Series, field_map: dict, df_cols_lower: dict) -> Find
         validated=False,
         false_positive=False,
         source="csv",
+        port_protocol=port_protocol,
     )
 
 

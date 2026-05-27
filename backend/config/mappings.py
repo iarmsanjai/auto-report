@@ -16,6 +16,8 @@ NESSUS_MAP = {
     "affected_components":   ["Host", "IP", "URL", "Hostname"],
     "poc":                   ["Plugin Output"],
     "references":            ["See Also", "References", "CVE"],
+    "port":                  ["Port"],
+    "protocol":              ["Protocol"],
 }
 
 OPENVAS_MAP = {
@@ -31,6 +33,8 @@ OPENVAS_MAP = {
     "affected_components":   ["Host", "Port", "IP"],
     "poc":                   ["Specific Result", "Evidence"],
     "references":            ["References", "URL"],
+    "port":                  ["Port"],
+    "protocol":              ["Port Protocol"],
 }
 
 BURP_MAP = {
@@ -61,6 +65,8 @@ GENERIC_MAP = {
     "affected_components":   ["host", "url", "ip", "endpoint", "component", "affected_url", "target"],
     "poc":                   ["poc", "proof_of_concept", "steps", "reproduction", "evidence"],
     "references":            ["references", "refs", "see_also", "links", "cve"],
+    "port":                  ["port"],
+    "protocol":              ["protocol"],
 }
 
 # Severity label normalisation — map scanner values to internal levels

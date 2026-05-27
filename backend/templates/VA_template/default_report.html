@@ -2,19 +2,20 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>VAPT Report — {{ report.client_name }}</title>
+<title>{{ report.document_title or (report.client_name ~ " VAPT Report") }}</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&display=swap');
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'EB Garamond', Garamond, serif; font-size: 12px; color: #222; background: #f0f0f0; padding: 0; max-width: 210mm; margin: 0 auto; line-height: 1.65; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+body { font-family: 'EB Garamond', Garamond, serif; font-size: 12px; color: #222; background: #f0f0f0; padding: 0; max-width: 210mm; margin: 0 auto; line-height: 1.65; text-align: justify; }
 
 /* ── Section headings ── */
+h1, h2, h3, h4, h5, h6 { text-align: left; }
 h1.sec { font-size: 20px; font-weight: 700; color: #1f86d0; border-bottom: 2px solid #1f86d0; padding-bottom: 4px; margin: 32px 0 14px; }
 h2.sub { font-size: 16px; font-weight: 600; margin: 18px 0 8px; color: #000; }
 h3.sub2 { font-size: 14px; font-weight: 700; margin: 14px 0 6px; color: #000; }
 p { margin-bottom: 8px; text-align: justify; font-size: 12px; line-height: 1.65; }
 ul { padding-left: 20px; margin: 6px 0 10px; }
-li { font-size: 12px; line-height: 1.6; margin-bottom: 4px; }
+li { font-size: 12px; line-height: 1.6; margin-bottom: 4px; text-align: justify; }
 a { color: #1f86d0; text-decoration: none; }
 code { font-family: 'Courier New', monospace; background: #f4f4f4; padding: 2px 5px; border-radius: 3px; font-size: 11px; }
 pre { font-family: 'Courier New', monospace; background: #f8f8f8; border: 1px solid #ddd; padding: 12px; border-radius: 4px; font-size: 11px; overflow-x: auto; white-space: pre-wrap; margin: 10px 0; }
@@ -131,7 +132,7 @@ table.tbl-center td.lbl { text-align: left; }
 .finding-block { margin-bottom: 36px; page-break-inside: avoid; }
 .finding-title { font-size: 15px; font-weight: 700; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 12px; }
 .section-label { font-size: 13px; font-weight: 700; margin: 14px 0 6px; color: #111; }
-.desc-block { background: #f9fbff; border-left: 3px solid #1f86d0; padding: 10px 14px; border-radius: 0 4px 4px 0; }
+.desc-block { background: #f9fbff; padding: 10px 14px; border-radius: 4px; }
 .poc-block { background: #0a0a14; color: #a0ffa0; font-family: 'Courier New', monospace; font-size: 11px; padding: 12px; border-radius: 5px; white-space: pre-wrap; }
 .payload-block code { display: block; background: #f0f4f8; border-left: 2px solid #1f86d055; margin: 4px 0; padding: 4px 10px; }
 .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); opacity: .03; z-index: -1; font-size: 120px; font-weight: 900; color: #1f86d0; pointer-events: none; user-select: none; }
@@ -249,9 +250,10 @@ table.tbl-center td.lbl { text-align: left; }
   page-break-before: always;   /* start fresh after TOC */
   break-before: page;
 }
+.page-counter::after { content: counter(page) " of " counter(pages); }
 
 @media print {
-  @page { size: A4; margin: 18mm 20mm; }
+  @page { size: A4; margin: 0; }
   body { background: #fff; max-width: 100%; margin: 0; padding: 0; }
   .a4-page { box-shadow: none; margin: 0; padding: 18mm 20mm; width: 100%; }
   .cover {
@@ -363,34 +365,66 @@ table.tbl-center td.lbl { text-align: left; }
     </a>
     <a href="#tech-summary" class="toc-entry toc-l2">
       <span class="toc-num">3.4</span>
-      <span class="toc-title">Technical Summary</span>
+      <span class="toc-title">Framework</span>
       <span class="toc-dots"></span>
       <span class="toc-page-num" data-target="tech-summary">…</span>
     </a>
+    <a href="#reassessment-guidelines" class="toc-entry toc-l2">
+      <span class="toc-num">3.5</span>
+      <span class="toc-title">Reassessment Guidelines</span>
+      <span class="toc-dots"></span>
+      <span class="toc-page-num" data-target="reassessment-guidelines">…</span>
+    </a>
+    <a href="#out-of-scope" class="toc-entry toc-l2">
+      <span class="toc-num">3.5.1</span>
+      <span class="toc-title">Out of Scope</span>
+      <span class="toc-dots"></span>
+      <span class="toc-page-num" data-target="out-of-scope">…</span>
+    </a>
+    <a href="#post-assessment-clean-up" class="toc-entry toc-l2">
+      <span class="toc-num">3.5.2</span>
+      <span class="toc-title">Post Assessment Clean-up</span>
+      <span class="toc-dots"></span>
+      <span class="toc-page-num" data-target="post-assessment-clean-up">…</span>
+    </a>
+    <a href="#severity-rating-scale" class="toc-entry toc-l2">
+      <span class="toc-num">3.5.3</span>
+      <span class="toc-title">Severity Rating Scale</span>
+      <span class="toc-dots"></span>
+      <span class="toc-page-num" data-target="severity-rating-scale">…</span>
+    </a>
 
-    <a href="#findings-dashboard" class="toc-entry toc-l1">
+    <a href="#executive-summary-findings" class="toc-entry toc-l1">
       <span class="toc-num">4.0</span>
-      <span class="toc-title">Findings Dashboard</span>
+      <span class="toc-title">Executive Summary of Findings</span>
       <span class="toc-dots"></span>
-      <span class="toc-page-num" data-target="findings-dashboard">…</span>
+      <span class="toc-page-num" data-target="executive-summary-findings">…</span>
+    </a>
+    <a href="#va-risk-score" class="toc-entry toc-l2">
+      <span class="toc-num">4.1</span>
+      <span class="toc-title">Vulnerability Assessment Risk Score</span>
+      <span class="toc-dots"></span>
+      <span class="toc-page-num" data-target="va-risk-score">…</span>
     </a>
 
-    <a href="#findings-summary" class="toc-entry toc-l1">
-      <span class="toc-num">5.0</span>
-      <span class="toc-title">Findings Summary</span>
+    {% if report.risk_graph %}
+    <a href="#risk-graph-by-vulnerabilities" class="toc-entry toc-l2">
+      <span class="toc-num">4.2</span>
+      <span class="toc-title">Risk Graph by Vulnerabilities</span>
       <span class="toc-dots"></span>
-      <span class="toc-page-num" data-target="findings-summary">…</span>
+      <span class="toc-page-num" data-target="risk-graph-by-vulnerabilities">…</span>
     </a>
+    {% endif %}
 
     <a href="#assessment-report" class="toc-entry toc-l1">
-      <span class="toc-num">6.0</span>
+      <span class="toc-num">5.0</span>
       <span class="toc-title">Assessment Report</span>
       <span class="toc-dots"></span>
       <span class="toc-page-num" data-target="assessment-report">…</span>
     </a>
     {% for f in findings %}
     <a href="#{{ f.id }}" class="toc-entry toc-l2">
-      <span class="toc-num">6.{{ loop.index }}</span>
+      <span class="toc-num">5.{{ loop.index }}</span>
       <span class="toc-title">{{ f.title }}</span>
       <span class="toc-dots"></span>
       <span class="toc-page-num" data-target="{{ f.id }}">…</span>
@@ -398,29 +432,23 @@ table.tbl-center td.lbl { text-align: left; }
     {% endfor %}
 
     <a href="#conclusion" class="toc-entry toc-l1">
-      <span class="toc-num">7.0</span>
+      <span class="toc-num">6.0</span>
       <span class="toc-title">Conclusion</span>
       <span class="toc-dots"></span>
       <span class="toc-page-num" data-target="conclusion">…</span>
     </a>
 
     <a href="#appendix" class="toc-entry toc-l1">
-      <span class="toc-num">8.0</span>
+      <span class="toc-num">7.0</span>
       <span class="toc-title">Appendix</span>
       <span class="toc-dots"></span>
       <span class="toc-page-num" data-target="appendix">…</span>
     </a>
-    <a href="#disclaimer" class="toc-entry toc-l2">
-      <span class="toc-num">8.1</span>
-      <span class="toc-title">Disclaimer</span>
+    <a href="#checklist-overview" class="toc-entry toc-l2">
+      <span class="toc-num">7.1</span>
+      <span class="toc-title">Checklist Overview</span>
       <span class="toc-dots"></span>
-      <span class="toc-page-num" data-target="disclaimer">…</span>
-    </a>
-    <a href="#owasp" class="toc-entry toc-l2">
-      <span class="toc-num">8.2</span>
-      <span class="toc-title">OWASP Web Security Top 10</span>
-      <span class="toc-dots"></span>
-      <span class="toc-page-num" data-target="owasp">…</span>
+      <span class="toc-page-num" data-target="checklist-overview">…</span>
     </a>
 
   </nav>
@@ -428,13 +456,26 @@ table.tbl-center td.lbl { text-align: left; }
 </div>
 
 <!-- ───────────── CONTENT PAGES (page 3 onwards) ───────────── -->
-<div class="a4-page content-pages">
-
-<!-- Page header on every content page -->
-<div class="page-header">
-  <img src="assets/page2_img1.png" alt="IARM" class="page-header-logo-left">
-  <img src="assets/page2_img2.png" alt="CREST | PEN TEST" class="page-header-logo-right">
-</div>
+<div class="a4-page content-pages" style="padding-top: 0; padding-bottom: 0;">
+  <table style="width: 100%; border: none; border-collapse: separate; border-spacing: 0;">
+    <thead style="display: table-header-group;">
+      <tr><td style="border: none; padding: 0;">
+        <!-- Page header on every content page -->
+        <div class="page-header" style="margin-top: 18mm;">
+          <img src="assets/page2_img1.png" alt="IARM" class="page-header-logo-left">
+          <img src="assets/page2_img2.png" alt="CREST | PEN TEST" class="page-header-logo-right">
+        </div>
+      </td></tr>
+    </thead>
+    <tfoot style="display: table-footer-group;">
+      <tr><td style="border: none; padding: 0;">
+        <div class="print-page-number" style="text-align:center;color:#888;font-size:11px;margin-top:20px;padding-top:16px;border-top:1px solid #ddd; margin-bottom: 18mm;">
+          Page <span class="page-counter"></span>
+        </div>
+      </td></tr>
+    </tfoot>
+    <tbody>
+      <tr><td style="border: none; padding: 0;">
 
 <!-- ───────────── 1.0 DOCUMENT CONTROL ───────────── -->
 <h1 class="sec" id="doc-control">1.0 Document Control</h1>
@@ -457,18 +498,11 @@ table.tbl-center td.lbl { text-align: left; }
     <tr><td class="lbl">Client Name</td><td>{{ report.client_name }}</td></tr>
     <tr>
       <td class="lbl">Document Title</td>
-      <td>
-        {{ report.client_name }} Vulnerability Assessment Report –
-        {% if report.report_month_year %}
-          {{ report.report_month_year }}
-        {% else %}
-          {{ report.report_delivery_date | fmt_date }}
-        {% endif %}
-      </td>
+      <td>{{ report.document_title }}</td>
     </tr>
     <tr><td class="lbl">Date of Version</td><td>{{ report.report_delivery_date | fmt_date_short }}</td></tr>
     <tr><td class="lbl">Created By</td><td>{{ report.tester_name }}</td></tr>
-    <tr><td class="lbl">Approved By</td><td>{{ report.validator_name }}</td></tr>
+    <tr><td class="lbl">Approved By</td><td>{{ report.approved_by }}</td></tr>
     <tr><td class="lbl">Confidentiality Level</td><td>High</td></tr>
   </tbody>
 </table>
@@ -535,85 +569,116 @@ table.tbl-center td.lbl { text-align: left; }
 </ul>
 <p>This approach provided a baseline understanding of the security risks associated with the assessed infrastructure components.</p>
 
-<h2 class="sub" id="tech-summary">3.4 Technical Summary</h2>
-<table>
-  <thead><tr><th>Property</th><th>Details</th></tr></thead>
-  <tbody>
-    <tr><td class="lbl">Project ID</td><td>{{ report.project_id }}</td></tr>
-    <tr><td class="lbl">Time Frame</td><td>{{ report.assessment_startdate | fmt_date_short }} to {{ report.assessment_enddate | fmt_date_short }}</td></tr>
-    <tr><td class="lbl">Engagement Type</td><td>{{ report.application_approach }}</td></tr>
-    <tr><td class="lbl">Report Date</td><td>{{ report.report_delivery_date | fmt_date_short }}</td></tr>
-  </tbody>
-</table>
+<h2 class="sub" id="tech-summary">3.4 Framework</h2>
+<p>IARM Information Security Pvt. Ltd.'s Vulnerability Assessment methodology is aligned with recognized industry standards and best practices. The approach is designed to ensure consistent, comprehensive, and systematic identification of known vulnerabilities across in-scope infrastructure components.</p>
+<p>The methodology is based on the following industry standards:</p>
+<div style="text-align: center; margin: 20px 0 24px;">
+  <img src="assets/framework.png" alt="Framework Standards"
+       style="max-width: 88%; height: auto; display: inline-block;">
+</div>
 
-<h3 class="sub2">3.4.1 Out of Scope</h3>
+<h2 class="sub" id="reassessment-guidelines">3.5 Reassessment Guidelines</h2>
+<p>A one-time retest is optional. The retest shall be performed on all identified vulnerabilities as a single consolidated exercise.<br>
+The customer must confirm the completion of remediation for all identified vulnerabilities as part of the initial engagement in order to avail of the optional retest.<br>
+Any retest not conducted within <strong>60 Days</strong> from the date of submission of the initial assessment report will be considered a <strong>“Fresh Audit”</strong>, for which additional commercial terms shall be provided upon request.</p>
+
+<h3 class="sub2" id="out-of-scope">3.5.1 Out of Scope</h3>
 <ul>
-  {% for item in report.outofscope if item %}
-  <li>{{ item }}</li>
-  {% endfor %}
-  <li>Fixing or remediation of identified vulnerabilities is not part of this engagement.</li>
-  <li>Post-incident analysis and log review assessments are not included.</li>
-  <li>Third-party services and microservices are excluded.</li>
+  <li>Assessment is limited to what is mentioned in the scope of work as defined in Project Scope.</li>
+  <li>Fixing any vulnerability during the Vulnerability assessment is not part of the scope.</li>
+  <li>Any other services or solutions not mentioned in the project scope are not covered as part of the audit exercise.</li>
+  <li>External Web Application Penetration Testing is not part of the Assessment scope.</li>
+  <li>Any post incident and log review Assessment is not part of the Assessment.</li>
 </ul>
 
-<h3 class="sub2">3.4.2 Reassessment</h3>
-<p>A one-time retest is optional. Any retest not conducted within <strong>{{ report.reassessment }}</strong> from the initial report date will be considered a <strong>Fresh Audit</strong>.</p>
+<h3 class="sub2" id="post-assessment-clean-up">3.5.2 Post Assessment Clean-up</h3>
+<p>Upon completion of the Vulnerability Assessment, any access provided for the purpose of the assessment should be reviewed and revoked as appropriate. Additionally, any tools or temporary components used during the assessment should be removed, ensuring the environment is restored to its original state.</p>
+
+<h3 class="sub2" id="severity-rating-scale">3.5.3 Severity Rating Scale</h3>
+<p>The assessment team used defined criteria to evaluate and rate the findings identified during the engagement. Risk ratings are derived from the calculated IARM risk scoring methodology, which considers impact, exploitability, exposure, and overall business risk.</p>
+<div style="text-align: center; margin: 20px 0 24px;">
+  <img src="assets/sev-rating.png" alt="Severity Rating Scale" style="max-width: 88%; height: auto; display: inline-block;">
+</div>
 
 
-<!-- ───────────── 4.0 FINDINGS DASHBOARD ───────────── -->
-<h1 class="sec" id="findings-dashboard">4.0 Findings Dashboard</h1>
-<p>Each finding is evaluated using the IARM Risk Score methodology considering severity, exploitability, exposure, and business risk.</p>
-<table>
-  <thead><tr><th>Vulnerability</th><th style="width:120px">Criticality</th></tr></thead>
-  <tbody>
-    {% for f in findings %}
+<!-- ───────────── 4.0 EXECUTIVE SUMMARY OF FINDINGS ───────────── -->
+<h1 class="sec" id="executive-summary-findings" style="page-break-before: always; break-before: page;">4.0 Executive Summary of Findings</h1>
+
+<h2 class="sub" id="va-risk-score">4.1 Vulnerability Assessment Risk Score</h2>
+<p>For each identified finding, IARM Information Security applies a structured <strong>IARM Risk Score</strong> methodology. This risk score evaluates multiple factors including the severity of the vulnerability, application exposure, user population impact, technical complexity of exploitation, and overall business risk.</p>
+<p>The objective of this scoring model is to provide a clear and consistent understanding of the risk posture associated with each vulnerability. For a detailed explanation of the IARM risk rating methodology and vulnerability categorization, please refer to the <strong>Risk Rating Scale (Section 3.5.3)</strong>.</p>
+<table class="tbl-center">
+  <thead>
     <tr>
+      <th style="width:60px">ID</th>
+      <th>Vulnerability</th>
+      <th style="width:120px">Severity</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% set counters = namespace(c=0, h=0, m=0, l=0, i=0) %}
+    {% for f in findings %}
+    {% set lvl = f.cvss.level | lower %}
+    {% if lvl == 'critical' %}{% set counters.c = counters.c + 1 %}{% set f_id = 'C' ~ counters.c %}
+    {% elif lvl == 'high' %}{% set counters.h = counters.h + 1 %}{% set f_id = 'H' ~ counters.h %}
+    {% elif lvl == 'medium' %}{% set counters.m = counters.m + 1 %}{% set f_id = 'M' ~ counters.m %}
+    {% elif lvl == 'low' %}{% set counters.l = counters.l + 1 %}{% set f_id = 'L' ~ counters.l %}
+    {% else %}{% set counters.i = counters.i + 1 %}{% set f_id = 'I' ~ counters.i %}{% endif %}
+    <tr>
+      <td>{{ f_id }}</td>
       <td>{{ f.title }}</td>
-      <td class="sev-{{ f.cvss.level }}" style="text-align:center">{{ f.cvss.level | capitalize }}</td>
+      <td class="sev-{{ lvl }}">{{ lvl | capitalize }}</td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
-<div class="risk-strip">
-  <div class="risk-box" style="background:#e60000;color:#fff"><span class="num">{{ finding_stats.count_critical }}</span><span class="lbl">Critical</span></div>
-  <div class="risk-box" style="background:#ff7a00;color:#fff"><span class="num">{{ finding_stats.count_high }}</span><span class="lbl">High</span></div>
-  <div class="risk-box" style="background:#ffcc00;color:#000"><span class="num">{{ finding_stats.count_medium }}</span><span class="lbl">Medium</span></div>
-  <div class="risk-box" style="background:#6b1c4f;color:#fff"><span class="num">{{ finding_stats.count_low }}</span><span class="lbl">Low</span></div>
-  <div class="risk-box" style="background:#6e6e6e;color:#fff"><span class="num">{{ finding_stats.count_info }}</span><span class="lbl">Info</span></div>
-</div>
 
-<!-- ───────────── 5.0 FINDINGS SUMMARY ───────────── -->
-<h1 class="sec" id="findings-summary">5.0 Findings Summary</h1>
-{% for f in findings %}
-<div style="margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #ddd">
-  <strong>{{ loop.index }}. {{ f.title }}</strong>
-  <span class="sev-{{ f.cvss.level }}" style="padding:2px 8px;border-radius:3px;font-size:10px;margin-left:8px">{{ f.cvss.level | capitalize }}</span>
-  {% if f.summary %}<p style="margin-top:6px;color:#444">{{ f.summary }}</p>{% endif %}
-</div>
-{% endfor %}
 
-<!-- ───────────── 6.0 ASSESSMENT REPORT ───────────── -->
-<h1 class="sec" id="assessment-report">6.0 Assessment Report</h1>
+
+
+{% if report.risk_graph %}
+<h2 class="sub" id="risk-graph-by-vulnerabilities" style="page-break-before: always; break-before: page;">4.2 Risk Graph by Vulnerabilities</h2>
+<div style="text-align: justify; margin: 24px 0;">
+  <img src="{{ report.risk_graph }}" alt="Risk Graph by Vulnerabilities" style="max-width: 100%; height: auto; display: block; margin: 0 auto;">
+</div>
+{% endif %}
+
+<!-- ───────────── 5.0 ASSESSMENT REPORT ───────────── -->
+<h1 class="sec" id="assessment-report" style="page-break-before: always; break-before: page;">5.0 Assessment Report</h1>
 <p>The vulnerabilities below were identified and verified by IARM Information Security during this Penetration Testing engagement.</p>
 
+{% set counters_det = namespace(c=0, h=0, m=0, l=0, i=0) %}
 {% for f in findings %}
-<div class="finding-block" id="{{ f.id }}">
-  <h2 class="finding-title">6.{{ loop.index }} {{ f.title }}</h2>
+{% set lvl = f.cvss.level | lower %}
+{% if lvl == 'critical' %}{% set counters_det.c = counters_det.c + 1 %}{% set f_id = 'C' ~ counters_det.c %}
+{% elif lvl == 'high' %}{% set counters_det.h = counters_det.h + 1 %}{% set f_id = 'H' ~ counters_det.h %}
+{% elif lvl == 'medium' %}{% set counters_det.m = counters_det.m + 1 %}{% set f_id = 'M' ~ counters_det.m %}
+{% elif lvl == 'low' %}{% set counters_det.l = counters_det.l + 1 %}{% set f_id = 'L' ~ counters_det.l %}
+{% else %}{% set counters_det.i = counters_det.i + 1 %}{% set f_id = 'I' ~ counters_det.i %}{% endif %}
 
-  <table>
-    <thead><tr><th>Risk Level</th><th>Ease of Exploit</th><th>CWE</th></tr></thead>
+<div class="finding-block" id="{{ f.id }}">
+  <h2 class="finding-title">5.{{ loop.index }} {{ f.title }} <span style="float:right">{{ f_id }}</span></h2>
+
+  <table class="tbl-center">
+    <thead>
+      <tr>
+        <th style="width:15%">ID</th>
+        <th>Port/Protocol</th>
+        <th style="width:25%">Risk Level</th>
+      </tr>
+    </thead>
     <tbody>
       <tr>
-        <td class="sev-{{ f.cvss.level }}">{{ f.cvss.level | capitalize }}</td>
-        <td class="ease-{{ f.ease | lower }}">{{ f.ease or 'Moderate' }}</td>
-        <td style="text-align:center">{{ f.cwe or 'N/A' }}</td>
+        <td><strong>{{ f_id }}</strong></td>
+        <td>{{ f.port_protocol or 'N/A' }}</td>
+        <td class="sev-{{ lvl }}" style="font-weight: bold; color: #fff;">{{ lvl | capitalize }}</td>
       </tr>
     </tbody>
   </table>
 
   {% if f.description %}
-  <p class="section-label">Description</p>
-  <div class="desc-block">{{ f.description | md }}</div>
+  <h3 style="font-size: 16px; font-weight: bold; margin: 16px 0 8px; color: #000;">Description:</h3>
+  <div class="desc-block" style="text-align: justify;">{{ f.description | md }}</div>
   {% endif %}
 
   {% if f.cvss.score %}
@@ -631,14 +696,38 @@ table.tbl-center td.lbl { text-align: left; }
   </div>
   {% endif %}
 
-  {% if f.impact %}
-  <p class="section-label">Business Impact</p>
-  <div>{{ f.impact | md }}</div>
-  {% endif %}
-
-  {% if f.affected_components %}
-  <p class="section-label">Affected Components</p>
-  <ul>{% for c in f.affected_components %}<li>{{ c }}</li>{% endfor %}</ul>
+  {% if f.device_identifier or f.affected_hosts or f.affected_components %}
+  <h3 style="font-size: 16px; font-weight: bold; margin: 16px 0 8px; color: #000;">Affected Host:</h3>
+  <table class="tbl-center" style="margin-bottom: 20px;">
+    <thead>
+      <tr>
+        <th>Device Identifier (Type)</th>
+        <th>IP / MAC / Hostname</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if f.affected_hosts %}
+        {% for host in f.affected_hosts %}
+        <tr>
+          <td>{{ f.device_identifier or host.type or 'N/A' }}</td>
+          <td>{{ host.ip or 'N/A' }}</td>
+        </tr>
+        {% endfor %}
+      {% elif f.affected_components %}
+        {% for c in f.affected_components %}
+        <tr>
+          <td>{{ f.device_identifier or 'N/A' }}</td>
+          <td>{{ c }}</td>
+        </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td>{{ f.device_identifier or 'N/A' }}</td>
+          <td>N/A</td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
   {% endif %}
 
   {% if f.payload %}
@@ -672,34 +761,49 @@ table.tbl-center td.lbl { text-align: left; }
 </div>
 {% endfor %}
 
-<!-- ───────────── 7.0 CONCLUSION ───────────── -->
-<h1 class="sec" id="conclusion">7.0 Conclusion</h1>
-<p>The Web Application Penetration Testing for <strong>{{ report.application_name or "the application" }}</strong> has been completed as per the defined scope. All identified vulnerabilities require remediation at the earliest to mitigate the risk of potential malicious exploitation.</p>
-<p>Information Security Assessment is a continuous practice essential to maintaining overall security posture. It is strongly recommended to conduct security assessments on a <strong>quarterly basis</strong> to ensure ongoing protection against evolving cyber threats.</p>
+<!-- ───────────── 6.0 CONCLUSION ───────────── -->
+<h1 class="sec" id="conclusion" style="page-break-before: always; break-before: page;">6.0 Conclusion</h1>
+<p>Within the given time frame the Assessment exercise was conducted at the mentioned premises. IARM highly recommends fixing the identified vulnerabilities and plan for reassessment within 60 days. The remedial measures as suggested by the Vulnerability Assessment “as-is basis” of the current infrastructure.</p>
+<p>Information Security is not just an on-time effort, but also an ongoing activity to identify risks and mitigate them. We highly recommend doing Vulnerability Assessment quarterly across the organization.</p>
+<p>The effort to identify Information security threats and associated breach is an enormous exercise and it must be put into practice as a framework within the organization. Information Security is not only “Information Technology” responsibility, but rather everybody's contribution. Ultimate ownership of Information Security is with the Business.</p>
 
-<!-- ───────────── 8.0 APPENDIX ───────────── -->
-<h1 class="sec" id="appendix">8.0 Appendix</h1>
-<h2 class="sub" id="disclaimer">8.1 Disclaimer</h2>
-<p>The Penetration Testing was conducted by IARM Information Security Pvt Ltd using open source and commercial off-the-shelf tools as per the defined and agreed scope of work. No application can ever be 100% secure regardless of testing conducted. The service provider shall take all reasonable steps to provide accurate results but cannot be held liable if testing fails to discover all vulnerabilities.</p>
+<!-- ───────────── 7.0 APPENDIX ───────────── -->
+<h1 class="sec" id="appendix">7.0 Appendix</h1>
+<h2 class="sub" id="checklist-overview">7.1 Checklist Overview</h2>
+<table class="tbl-center" style="margin-bottom: 24px;">
+  <thead>
+    <tr>
+      <th style="width:10%">S.No</th>
+      <th style="width:65%">Checks</th>
+      <th style="width:25%">Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>Host Identification</td><td style="color:#81B655; font-weight:bold; background-color:#F0F4E8;">Validated</td></tr>
+    <tr><td>2</td><td>Open Port (Tcp/Udp)</td><td style="color:#81B655; font-weight:bold; background-color:#F0F4E8;">Validated</td></tr>
+    <tr><td>3</td><td>Service Detection</td><td style="color:#81B655; font-weight:bold; background-color:#F0F4E8;">Validated</td></tr>
+    <tr><td>4</td><td>Malware Detection</td><td style="color:#81B655; font-weight:bold; background-color:#F0F4E8;">Validated</td></tr>
+    <tr><td>5</td><td>Unpatched Software</td><td style="color:#81B655; font-weight:bold; background-color:#F0F4E8;">Validated</td></tr>
+    <tr><td>6</td><td>Known Vulnerabilities</td><td style="color:#81B655; font-weight:bold; background-color:#F0F4E8;">Validated</td></tr>
+    <tr><td>7</td><td>Security Misconfiguration</td><td style="color:#81B655; font-weight:bold; background-color:#F0F4E8;">Validated</td></tr>
+    <tr><td>8</td><td>Operating System Authentication Weaknesses</td><td style="color:#81B655; font-weight:bold; background-color:#F0F4E8;">Validated</td></tr>
+    <tr><td>9</td><td>Insecure Protocols</td><td style="color:#81B655; font-weight:bold; background-color:#F0F4E8;">Validated</td></tr>
+    <tr><td>10</td><td>Network Share Weaknesses</td><td style="color:#81B655; font-weight:bold; background-color:#F0F4E8;">Validated</td></tr>
+    <tr><td>11</td><td>Common Mistakes & Configuration Weaknesses</td><td style="color:#81B655; font-weight:bold; background-color:#F0F4E8;">Validated</td></tr>
+    <tr><td>12</td><td>Information Leakage</td><td style="color:#81B655; font-weight:bold; background-color:#F0F4E8;">Validated</td></tr>
+    <tr><td>13</td><td>Database Misconfiguration</td><td style="color:#81B655; font-weight:bold; background-color:#F0F4E8;">Validated</td></tr>
+    <tr><td>14</td><td>SMB/SNMP/LDAP Misconfigurations</td><td style="color:#81B655; font-weight:bold; background-color:#F0F4E8;">Validated</td></tr>
+    <tr><td>15</td><td>Active Directory/Iam Misconfigurations</td><td style="color:#81B655; font-weight:bold; background-color:#F0F4E8;">Validated</td></tr>
+    <tr><td>16</td><td>User Enumeration</td><td style="color:#81B655; font-weight:bold; background-color:#F0F4E8;">Validated</td></tr>
+    <tr><td>17</td><td>Windows Management Instrumentation (WMI) queries</td><td style="color:#81B655; font-weight:bold; background-color:#F0F4E8;">Validated</td></tr>
+    <tr><td>18</td><td>Active Directory Service Interfaces (ADSI) queries</td><td style="color:#81B655; font-weight:bold; background-color:#F0F4E8;">Validated</td></tr>
+    <tr><td>19</td><td>The Security Account Manager (SAM) registry</td><td style="color:#81B655; font-weight:bold; background-color:#F0F4E8;">Validated</td></tr>
+  </tbody>
+</table>
 
-<h2 class="sub" id="owasp">8.2 OWASP Web Security Top 10 (2025)</h2>
-<ul>
-  <li>A01:2025 – Broken Access Control</li>
-  <li>A02:2025 – Security Misconfiguration</li>
-  <li>A03:2025 – Software Supply Chain Failures</li>
-  <li>A04:2025 – Cryptographic Failures</li>
-  <li>A05:2025 – Injection</li>
-  <li>A06:2025 – Insecure Design</li>
-  <li>A07:2025 – Authentication Failures</li>
-  <li>A08:2025 – Software or Data Integrity Failures</li>
-  <li>A09:2025 – Security Logging & Alerting Failures</li>
-  <li>A10:2025 – Mishandling of Exceptional Conditions</li>
-</ul>
-
-<p style="text-align:center;color:#888;font-size:10px;margin-top:40px;padding-top:16px;border-top:1px solid #ddd">
-  Generated by VAPT Report Automation System · IARM Information Security · {{ generated_at }}
-</p>
-
+      </td></tr>
+    </tbody>
+  </table>
 </div><!-- /.a4-page.content-pages -->
 
 <script>

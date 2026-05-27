@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>VAPT Report — {{ report.client_name }}</title>
+<title>{{ report.document_title or (report.client_name ~ " VAPT Report") }}</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;700&display=swap');
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -119,11 +119,13 @@ tbody tr:nth-child(even) { background: #0d111750; }
   <thead><tr><th>Property</th><th>Details</th></tr></thead>
   <tbody>
     <tr><td class="lbl">Client</td><td>{{ report.client_name }}</td></tr>
+    <tr><td class="lbl">Document Title</td><td>{{ report.document_title }}</td></tr>
     <tr><td class="lbl">Application</td><td>{{ report.application_name }}</td></tr>
     <tr><td class="lbl">Version</td><td>{{ report.application_version }}</td></tr>
     <tr><td class="lbl">Project ID</td><td>{{ report.project_id }}</td></tr>
     <tr><td class="lbl">Tester</td><td>{{ report.tester_name }}</td></tr>
     <tr><td class="lbl">Reviewer</td><td>{{ report.validator_name }}</td></tr>
+    <tr><td class="lbl">Approved By</td><td>{{ report.approved_by }}</td></tr>
     <tr><td class="lbl">Classification</td><td style="color:#ff6666;font-weight:700">CONFIDENTIAL — VERY HIGH</td></tr>
   </tbody>
 </table>
@@ -135,7 +137,7 @@ tbody tr:nth-child(even) { background: #0d111750; }
   <thead><tr><th>Property</th><th>Details</th></tr></thead>
   <tbody>
     <tr><td class="lbl">Approach</td><td>{{ report.application_approach }}</td></tr>
-    <tr><td class="lbl">URL(s)</td><td>{% for url in report.application_url if url %}<a href="{{ url }}">{{ url }}</a><br>{% endfor %}</td></tr>
+    <tr><td class="lbl">Scoped IPs Count</td><td>{{ report.scoped_ips_count }}</td></tr>
   </tbody>
 </table>
 
@@ -153,13 +155,7 @@ tbody tr:nth-child(even) { background: #0d111750; }
     {% endfor %}
   </tbody>
 </table>
-<div class="risk-strip">
-  <div class="risk-box rb-critical"><span class="num">{{ finding_stats.count_critical }}</span><span class="lbl">CRITICAL</span></div>
-  <div class="risk-box rb-high"><span class="num">{{ finding_stats.count_high }}</span><span class="lbl">HIGH</span></div>
-  <div class="risk-box rb-medium"><span class="num">{{ finding_stats.count_medium }}</span><span class="lbl">MEDIUM</span></div>
-  <div class="risk-box rb-low"><span class="num">{{ finding_stats.count_low }}</span><span class="lbl">LOW</span></div>
-  <div class="risk-box rb-info"><span class="num">{{ finding_stats.count_info }}</span><span class="lbl">INFO</span></div>
-</div>
+
 
 <!-- ───────────── 6.0 ASSESSMENT REPORT ───────────── -->
 <h1 class="sec">6.0 Assessment Report</h1>

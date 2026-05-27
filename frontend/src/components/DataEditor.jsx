@@ -9,7 +9,7 @@ const EMPTY_FINDING = {
   poc: '',
   references: [],
   validated: false, false_positive: false, source: 'manual',
-  evidence_images: [],
+  evidence_images: [], device_identifier: '', port_protocol: '',
 }
 
 const SEV_COLORS = { critical: '#e60000', high: '#ff7a00', medium: '#ffcc00', low: '#6b1c4f', info: '#6e6e6e' }
@@ -92,33 +92,36 @@ function MetaForm({ meta, setMeta, toast }) {
             <Field label="Application Version" value={local.application_version || ''} onChange={e => set('application_version', e.target.value)} placeholder="2.1.0" />
             <div className="form-group">
               <label className="form-label">Testing Approach</label>
-              <select value={local.application_approach || 'Gray Box'} onChange={e => set('application_approach', e.target.value)} className="form-select">
-                {['Black Box', 'Gray Box', 'White Box'].map(o => <option key={o}>{o}</option>)}
+              <select value={local.application_approach || 'External'} onChange={e => set('application_approach', e.target.value)} className="form-select">
+                {['Internal', 'External', 'Internal/External'].map(o => <option key={o}>{o}</option>)}
               </select>
             </div>
-            <div className="form-group">
-              <label className="form-label">Application URL(s) — one per line</label>
-              <textarea
-                value={(local.application_url || []).join('\n')}
-                onChange={e => set('application_url', e.target.value.split('\n').map(s => s.trim()).filter(Boolean))}
-                className="form-textarea"
-                placeholder="https://app.target.com"
-              />
-            </div>
+            <Field label="Scoped IPs Count" value={local.scoped_ips_count || ''} onChange={e => set('scoped_ips_count', e.target.value)} placeholder="e.g. 15" />
           </div>
           <div className="card">
-            <div className="section-label">Out of Scope (one per line)</div>
-            <textarea
-              value={(local.outofscope || []).join('\n')}
-              onChange={e => set('outofscope', e.target.value.split('\n').filter(Boolean))}
-              className="form-textarea"
-              style={{ minHeight: 100 }}
-              placeholder="Enter custom exclusions..."
+            <div className="section-label">Risk Graph by Vulnerabilities</div>
+            <input
+              type="file"
+              accept=".jpg,.jpeg,.png"
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onloadend = () => {
+                    set('risk_graph', reader.result);
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }}
+              className="form-input"
             />
-            <div className="form-group" style={{ marginTop: 14 }}>
-              <label className="form-label">Reassessment Period</label>
-              <input value={local.reassessment || '30 days'} onChange={e => set('reassessment', e.target.value)} className="form-input" placeholder="30 days" />
-            </div>
+            {local.risk_graph && (
+              <div style={{ marginTop: 10, textAlign: 'center' }}>
+                <img src={local.risk_graph} alt="Risk Graph" style={{ maxWidth: '100%', maxHeight: 200, border: '1px solid var(--border)', borderRadius: 4 }} />
+                <button type="button" className="btn btn-sm mt-8" onClick={() => set('risk_graph', '')}>Remove</button>
+              </div>
+            )}
+
           </div>
         </div>
         <div>
@@ -126,6 +129,8 @@ function MetaForm({ meta, setMeta, toast }) {
             <div className="section-label">Team & Timeline</div>
             <Field label="Tester Name" value={local.tester_name || ''} onChange={e => set('tester_name', e.target.value)} placeholder="Your Name" />
             <Field label="Validator / Reviewer" value={local.validator_name || ''} onChange={e => set('validator_name', e.target.value)} placeholder="Validator Name" />
+            <Field label="Document Title" value={local.document_title || ''} onChange={e => set('document_title', e.target.value)} placeholder="Vulnerability Assessment Report" />
+            <Field label="Approved By" value={local.approved_by || ''} onChange={e => set('approved_by', e.target.value)} placeholder="Approver Name" />
             <Field label="Project ID" value={local.project_id || ''} onChange={e => set('project_id', e.target.value)} placeholder={`IARM-${new Date().getFullYear()}-001`} />
             <Field label="Assessment Start Date" type="date" value={local.assessment_startdate || ''} onChange={e => set('assessment_startdate', e.target.value)} />
             <Field label="Assessment End Date" type="date" value={local.assessment_enddate || ''} onChange={e => set('assessment_enddate', e.target.value)} />
@@ -232,20 +237,17 @@ function FindingForm({ initial, onSave, onCancel, toast }) {
                 </select>
               </div>
             </div>
-            <div className="grid-2">
-              <div className="form-group">
-                <label className="form-label">CVSS Score (0–10)</label>
-                <input type="number" min="0" max="10" step="0.1" value={f.cvss?.score || ''} onChange={e => setCvss('score', parseFloat(e.target.value) || 0)} className="form-input" placeholder="9.8" />
-              </div>
-              <div className="form-group">
-                <label className="form-label">CWE</label>
-                <input value={f.cwe || ''} onChange={e => set('cwe', e.target.value)} className="form-input" placeholder="CWE-89" />
-              </div>
+            
+            <div className="form-group" style={{ marginTop: 12 }}>
+              <label className="form-label">Device Identifier (Type)</label>
+              <input value={f.device_identifier || ''} onChange={e => set('device_identifier', e.target.value)} className="form-input" placeholder="e.g. firewall, router, server" />
             </div>
-            <div className="form-group">
-              <label className="form-label">CVSS Vector</label>
-              <input value={f.cvss?.vector || ''} onChange={e => setCvss('vector', e.target.value)} className="form-input" placeholder="CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H" style={{ fontFamily: 'PT Sans, sans-serif', fontSize: 11 }} />
+            
+            <div className="form-group" style={{ marginTop: 12 }}>
+              <label className="form-label">Port / Protocol</label>
+              <input value={f.port_protocol || ''} onChange={e => set('port_protocol', e.target.value)} className="form-input" placeholder="e.g. 443/tcp, 80/http" />
             </div>
+
           </div>
 
           {/* Preview chip */}
@@ -263,52 +265,7 @@ function FindingForm({ initial, onSave, onCancel, toast }) {
             {f.summary && <div style={{ fontSize: 11, color: 'var(--dim)', marginTop: 4 }}>{f.summary}</div>}
           </div>
 
-          <div className="card">
-            <div className="section-label">Flags</div>
-            <div className="flex gap-20">
-              {[['validated', 'Validated ✓', 'var(--green)'], ['false_positive', 'False Positive ✕', 'var(--red)']].map(([k, l, c]) => (
-                <label key={k} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 12, color: f[k] ? c : 'var(--dim)' }}>
-                  <input 
-                    type="checkbox" 
-                    checked={f[k] || false} 
-                    onChange={e => {
-                      const checked = e.target.checked
-                      set(k, checked)
-                      if (checked) {
-                        set(k === 'validated' ? 'false_positive' : 'validated', false)
-                      }
-                    }} 
-                    style={{ accentColor: c, width: 14, height: 14 }} 
-                  />
-                  {l}
-                </label>
-              ))}
-            </div>
-          </div>
 
-          <div className="card">
-            <div className="section-label">Affected Components — one per line</div>
-            <textarea
-              value={(f.affected_components || []).join('\n')}
-              onChange={e => set('affected_components', e.target.value.split('\n').filter(Boolean))}
-              className="form-textarea"
-              rows={4}
-              placeholder="/api/auth/login&#10;/admin/users/{id}"
-              style={{ fontFamily: 'PT Sans, sans-serif', fontSize: 11 }}
-            />
-          </div>
-
-          <div className="card">
-            <div className="section-label">Payloads — one per line</div>
-            <textarea
-              value={(f.payload || []).join('\n')}
-              onChange={e => set('payload', e.target.value.split('\n').filter(Boolean))}
-              className="form-textarea"
-              rows={4}
-              placeholder="' OR 1=1--&#10;<script>alert(1)</script>"
-              style={{ fontFamily: 'PT Sans, sans-serif', fontSize: 11 }}
-            />
-          </div>
 
           <div className="card">
             <div className="section-label">References — one per line</div>
@@ -328,7 +285,7 @@ function FindingForm({ initial, onSave, onCancel, toast }) {
           <div className="card">
             <div className="section-label">Finding Details</div>
             <TA label="Description * — explain the vulnerability" rows={7} placeholder="Describe the vulnerability, root cause, and affected code/endpoint..." value={f.description || ''} onChange={e => set('description', e.target.value)} onGenerate={() => askAI('description')} generating={generatingField === 'description'} />
-            <TA label="Business Impact — what can an attacker do?" rows={5} placeholder="Data exfiltration, authentication bypass, RCE..." value={f.impact || ''} onChange={e => set('impact', e.target.value)} onGenerate={() => askAI('impact')} generating={generatingField === 'impact'} />
+
             <TA label="Proof of Concept — steps to reproduce" rows={7} mono placeholder="Step 1: Navigate to /endpoint&#10;Step 2: Inject payload: ' OR 1=1--&#10;Step 3: Observe 200 OK response..." value={f.poc || ''} onChange={e => set('poc', e.target.value)} onGenerate={() => askAI('poc')} generating={generatingField === 'poc'} />
             <TA label="Recommendation * — how to fix" rows={6} placeholder="Use parameterized queries. Implement input validation..." value={f.recommendation || ''} onChange={e => set('recommendation', e.target.value)} onGenerate={() => askAI('recommendation')} generating={generatingField === 'recommendation'} />
           </div>

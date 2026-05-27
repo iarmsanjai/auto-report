@@ -28,12 +28,19 @@ export default function ReportPreview({ findings, meta, toast, authUser, current
   const active = findings.filter(f => !f.false_positive)
   const payload = { report: meta, findings, finding_stats: stats }
 
+  const getFileName = (ext) => {
+    if (meta.document_title) {
+      return `${meta.document_title.replace(/\s+/g, '_')}.${ext}`
+    }
+    const slug = (meta.client_name || 'report').replace(/\s+/g, '_')
+    return `vapt_report_${slug}_${todayStr()}.${ext}`
+  }
+
   const doExportHTML = async () => {
     setLoading(true)
     try {
       const html = await exportHTML(payload, template)
-      const slug = (meta.client_name || 'report').replace(/\s+/g, '_')
-      downloadBlob(html, `vapt_report_${slug}_${todayStr()}.html`, 'text/html')
+      downloadBlob(html, getFileName('html'), 'text/html')
       toast('HTML report downloaded ✓')
     } catch (err) {
       toast('Export failed — ' + (err?.response?.data?.detail || 'check backend'), 'error')
@@ -59,7 +66,13 @@ export default function ReportPreview({ findings, meta, toast, authUser, current
     try {
       const html = await exportHTML(payload, template)
       const blob = new Blob([html], { type: 'text/html' })
-      window.open(URL.createObjectURL(blob), '_blank')
+      const url = URL.createObjectURL(blob)
+      const win = window.open(url, '_blank')
+      
+      // Attempt to set title of new tab so printing defaults to correct name
+      win.onload = () => {
+        if (meta.document_title) win.document.title = meta.document_title
+      }
     } catch (err) {
       toast('Failed to open preview', 'error')
     } finally {
@@ -72,18 +85,20 @@ export default function ReportPreview({ findings, meta, toast, authUser, current
     try {
       const html = await exportHTML(payload, template)
       const iframe = printIframeRef.current
-      // Inject the report HTML and trigger browser print dialog
       iframe.srcdoc = html
       iframe.onload = () => {
         try {
+          if (meta.document_title) iframe.contentDocument.title = meta.document_title
           iframe.contentWindow.focus()
           iframe.contentWindow.print()
         } catch (e) {
-          // Fallback: open in new tab with print triggered
           const blob = new Blob([html], { type: 'text/html' })
           const url = URL.createObjectURL(blob)
           const win = window.open(url, '_blank')
-          win.onload = () => win.print()
+          win.onload = () => {
+            if (meta.document_title) win.document.title = meta.document_title
+            win.print()
+          }
         }
         setPdfLoading(false)
       }
@@ -97,8 +112,7 @@ export default function ReportPreview({ findings, meta, toast, authUser, current
     setDocxLoading(true)
     try {
       const blob = await exportDOCX(payload, template)
-      const slug = (meta.client_name || 'report').replace(/\s+/g, '_')
-      downloadBlob(blob, `vapt_report_${slug}_${todayStr()}.docx`, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+      downloadBlob(blob, getFileName('docx'), 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
       toast('MS Word report downloaded ✓')
     } catch (err) {
       toast('DOCX export failed', 'error')

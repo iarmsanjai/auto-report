@@ -67,6 +67,7 @@ class Finding(BaseModel):
     false_positive: bool = False
     source: str = "manual"
     evidence_images: List[str] = []
+    device_identifier: str = ""
     # VA-specific extras
     port_protocol: str = ""
     output: str = ""
@@ -102,6 +103,9 @@ class ReportMeta(BaseModel):
     report_month_year: str = ""      # e.g. "May 2026"
     assessment_type: str = "Internal/External"
     scoped_ips_count: str = ""       # e.g. "12"
+    document_title: str = ""
+    approved_by: str = ""
+    risk_graph: str = ""
     scoped_assets: List[ScopedAsset] = []
 
     model_config = {"extra": "ignore"}
