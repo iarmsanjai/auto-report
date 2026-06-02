@@ -21,11 +21,11 @@ from models.schemas import Finding, FindingStats, ReportMeta
 log = logging.getLogger(__name__)
 
 SEV_COLORS = {
-    "critical": ("#f1f5f9", "#334155"),
-    "high":     ("#f1f5f9", "#334155"),
-    "medium":   ("#f1f5f9", "#334155"),
-    "low":      ("#f1f5f9", "#334155"),
-    "info":     ("#f1f5f9", "#334155"),
+    "critical": ("#e60000", "#ffffff"),
+    "high":     ("#ff7a00", "#ffffff"),
+    "medium":   ("#ffcc00", "#ffffff"),
+    "low":      ("#6b1c4f", "#ffffff"),
+    "info":     ("#6e6e6e", "#ffffff"),
 }
 
 EASE_COLORS = {
