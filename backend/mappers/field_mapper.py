@@ -10,6 +10,7 @@ from typing import Any, Dict, List
 
 from config.mappings import GENERIC_MAP, SEVERITY_NORMALISE, EASE_NORMALISE
 from models.schemas import AffectedHost, Finding, CVSSModel, ImportResult
+from parsers.csv_parser import extract_port_from_string
 
 log = logging.getLogger(__name__)
 
@@ -108,6 +109,24 @@ def map_finding(raw: Dict) -> Finding | None:
 
     # VA-specific extras
     port_proto = str(_pluck(raw, ["port_protocol", "port", "protocol"]))
+    if not port_proto.strip() or port_proto.lower() in ("nan", "none", "null"):
+        # Fallback 1: Try to extract from affected_components
+        for comp in components:
+            ext_port, ext_proto = extract_port_from_string(comp)
+            if ext_port:
+                port_proto = f"{ext_port}/{ext_proto}" if ext_proto else ext_port
+                break
+
+        # Fallback 2: Check other common fields in the raw dictionary
+        if not port_proto.strip() or port_proto.lower() in ("nan", "none", "null"):
+            for field in ["host", "ip", "url", "target", "endpoint", "destination", "dest"]:
+                val = _pluck(raw, [field])
+                if val:
+                    ext_port, ext_proto = extract_port_from_string(str(val))
+                    if ext_port:
+                        port_proto = f"{ext_port}/{ext_proto}" if ext_proto else ext_port
+                        break
+
     output_text = str(_pluck(raw, ["output", "plugin_output", "raw_output"]))
     raw_hosts = _pluck(raw, ["affected_hosts", "hosts"], default=[])
     if isinstance(raw_hosts, list):

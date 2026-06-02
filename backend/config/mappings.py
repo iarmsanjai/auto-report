@@ -16,8 +16,8 @@ NESSUS_MAP = {
     "affected_components":   ["Host", "IP", "URL", "Hostname"],
     "poc":                   ["Plugin Output"],
     "references":            ["See Also", "References", "CVE"],
-    "port":                  ["Port"],
-    "protocol":              ["Protocol"],
+    "port":                  ["Port", "Port Number", "Service Port", "Target Port", "Dest Port", "Destination Port", "port_number", "target_port", "dst_port", "p"],
+    "protocol":              ["Protocol", "Proto", "Protocol Type", "Port Protocol", "protocol_type", "transport", "prot"],
 }
 
 OPENVAS_MAP = {
@@ -33,8 +33,8 @@ OPENVAS_MAP = {
     "affected_components":   ["Host", "Port", "IP"],
     "poc":                   ["Specific Result", "Evidence"],
     "references":            ["References", "URL"],
-    "port":                  ["Port"],
-    "protocol":              ["Port Protocol"],
+    "port":                  ["Port", "Port Number", "Service Port", "Target Port", "Dest Port", "Destination Port", "port_number", "target_port", "dst_port", "p"],
+    "protocol":              ["Port Protocol", "Protocol", "Proto", "Protocol Type", "protocol_type", "transport", "prot"],
 }
 
 BURP_MAP = {
@@ -50,6 +50,8 @@ BURP_MAP = {
     "affected_components":   ["URL", "Host", "Path"],
     "poc":                   ["Request", "Evidence"],
     "references":            ["References", "External references"],
+    "port":                  ["Port", "Port Number", "Service Port", "Target Port", "Dest Port", "Destination Port", "port_number", "target_port", "dst_port", "p"],
+    "protocol":              ["Protocol", "Proto", "Protocol Type", "Port Protocol", "protocol_type", "transport", "prot"],
 }
 
 GENERIC_MAP = {
@@ -65,8 +67,8 @@ GENERIC_MAP = {
     "affected_components":   ["host", "url", "ip", "endpoint", "component", "affected_url", "target"],
     "poc":                   ["poc", "proof_of_concept", "steps", "reproduction", "evidence"],
     "references":            ["references", "refs", "see_also", "links", "cve"],
-    "port":                  ["port"],
-    "protocol":              ["protocol"],
+    "port":                  ["port", "Port", "Port Number", "Service Port", "Target Port", "Dest Port", "Destination Port", "port_number", "target_port", "dst_port", "p"],
+    "protocol":              ["protocol", "Protocol", "Proto", "Protocol Type", "Port Protocol", "protocol_type", "transport", "prot"],
 }
 
 # Severity label normalisation — map scanner values to internal levels
