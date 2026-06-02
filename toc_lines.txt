@@ -1,0 +1,130 @@
+Line 428: /* ── TOC Page ── */
+Line 429: .toc-page {
+Line 446: .toc-heading {
+Line 456: .toc-divider {
+Line 463: .toc-nav {
+Line 471: .toc-entry {
+Line 482: .toc-entry:hover .toc-title,
+Line 483: .toc-entry:hover .toc-num {
+Line 487: .toc-l1 {
+Line 492: .toc-l2 {
+Line 499: .toc-l2 .toc-num {
+Line 503: .toc-num {
+Line 510: .toc-title {
+Line 514: .toc-dots {
+Line 521: .toc-page-num {
+Line 530: .toc-l2 .toc-page-num {
+Line 549: /* start fresh after TOC */
+Line 586: .toc-page {
+Line 636: <div class="toc-page">
+Line 647: <!-- TOC title -->
+Line 648: <h2 class="toc-heading">Table of Contents</h2>
+Line 649: <div class="toc-divider"></div>
+Line 651: <!-- TOC entries -->
+Line 652: <nav class="toc-nav">
+Line 654: <a href="#doc-control" class="toc-entry toc-l1">
+Line 655: <span class="toc-num">1.0</span>
+Line 656: <span class="toc-title">Document Control</span>
+Line 657: <span class="toc-dots"></span>
+Line 658: <span class="toc-page-num" data-target="doc-control">…</span>
+Line 661: <a href="#about-us" class="toc-entry toc-l1">
+Line 662: <span class="toc-num">2.0</span>
+Line 663: <span class="toc-title">About Us</span>
+Line 664: <span class="toc-dots"></span>
+Line 665: <span class="toc-page-num" data-target="about-us">…</span>
+Line 668: <a href="#engagement" class="toc-entry toc-l1">
+Line 669: <span class="toc-num">3.0</span>
+Line 670: <span class="toc-title">Engagement Summary</span>
+Line 671: <span class="toc-dots"></span>
+Line 672: <span class="toc-page-num" data-target="engagement">…</span>
+Line 674: <a href="#project-overview" class="toc-entry toc-l2">
+Line 675: <span class="toc-num">3.1</span>
+Line 676: <span class="toc-title">Project Overview</span>
+Line 677: <span class="toc-dots"></span>
+Line 678: <span class="toc-page-num" data-target="project-overview">…</span>
+Line 680: <a href="#goals" class="toc-entry toc-l2">
+Line 681: <span class="toc-num">3.2</span>
+Line 682: <span class="toc-title">Goals</span>
+Line 683: <span class="toc-dots"></span>
+Line 684: <span class="toc-page-num" data-target="goals">…</span>
+Line 686: <a href="#approach" class="toc-entry toc-l2">
+Line 687: <span class="toc-num">3.3</span>
+Line 688: <span class="toc-title">Approach</span>
+Line 689: <span class="toc-dots"></span>
+Line 690: <span class="toc-page-num" data-target="approach">…</span>
+Line 692: <a href="#tech-summary" class="toc-entry toc-l2">
+Line 693: <span class="toc-num">3.4</span>
+Line 694: <span class="toc-title">Framework</span>
+Line 695: <span class="toc-dots"></span>
+Line 696: <span class="toc-page-num" data-target="tech-summary">…</span>
+Line 698: <a href="#reassessment-guidelines" class="toc-entry toc-l2">
+Line 699: <span class="toc-num">3.5</span>
+Line 700: <span class="toc-title">Reassessment Guidelines</span>
+Line 701: <span class="toc-dots"></span>
+Line 702: <span class="toc-page-num" data-target="reassessment-guidelines">…</span>
+Line 704: <a href="#out-of-scope" class="toc-entry toc-l2">
+Line 705: <span class="toc-num">3.5.1</span>
+Line 706: <span class="toc-title">Out of Scope</span>
+Line 707: <span class="toc-dots"></span>
+Line 708: <span class="toc-page-num" data-target="out-of-scope">…</span>
+Line 710: <a href="#post-assessment-clean-up" class="toc-entry toc-l2">
+Line 711: <span class="toc-num">3.5.2</span>
+Line 712: <span class="toc-title">Post Assessment Clean-up</span>
+Line 713: <span class="toc-dots"></span>
+Line 714: <span class="toc-page-num" data-target="post-assessment-clean-up">…</span>
+Line 716: <a href="#severity-rating-scale" class="toc-entry toc-l2">
+Line 717: <span class="toc-num">3.5.3</span>
+Line 718: <span class="toc-title">Severity Rating Scale</span>
+Line 719: <span class="toc-dots"></span>
+Line 720: <span class="toc-page-num" data-target="severity-rating-scale">…</span>
+Line 723: <a href="#executive-summary-findings" class="toc-entry toc-l1">
+Line 724: <span class="toc-num">4.0</span>
+Line 725: <span class="toc-title">Executive Summary of Findings</span>
+Line 726: <span class="toc-dots"></span>
+Line 727: <span class="toc-page-num" data-target="executive-summary-findings">…</span>
+Line 729: <a href="#va-risk-score" class="toc-entry toc-l2">
+Line 730: <span class="toc-num">4.1</span>
+Line 731: <span class="toc-title">Vulnerability Assessment Risk Score</span>
+Line 732: <span class="toc-dots"></span>
+Line 733: <span class="toc-page-num" data-target="va-risk-score">…</span>
+Line 737: <a href="#risk-graph-by-vulnerabilities" class="toc-entry toc-l2">
+Line 738: <span class="toc-num">4.2</span>
+Line 739: <span class="toc-title">Risk Graph by Vulnerabilities</span>
+Line 740: <span class="toc-dots"></span>
+Line 741: <span class="toc-page-num" data-target="risk-graph-by-vulnerabilities">…</span>
+Line 745: <a href="#assessment-report" class="toc-entry toc-l1">
+Line 746: <span class="toc-num">5.0</span>
+Line 747: <span class="toc-title">Assessment Report</span>
+Line 748: <span class="toc-dots"></span>
+Line 749: <span class="toc-page-num" data-target="assessment-report">…</span>
+Line 752: <a href="#{{ f.id }}" class="toc-entry toc-l2">
+Line 753: <span class="toc-num">5.{{ loop.index }}</span>
+Line 754: <span class="toc-title">{{ f.title }}</span>
+Line 755: <span class="toc-dots"></span>
+Line 756: <span class="toc-page-num" data-target="{{ f.id }}">…</span>
+Line 760: <a href="#conclusion" class="toc-entry toc-l1">
+Line 761: <span class="toc-num">6.0</span>
+Line 762: <span class="toc-title">Conclusion</span>
+Line 763: <span class="toc-dots"></span>
+Line 764: <span class="toc-page-num" data-target="conclusion">…</span>
+Line 767: <a href="#appendix" class="toc-entry toc-l1">
+Line 768: <span class="toc-num">7.0</span>
+Line 769: <span class="toc-title">Appendix</span>
+Line 770: <span class="toc-dots"></span>
+Line 771: <span class="toc-page-num" data-target="appendix">…</span>
+Line 773: <a href="#checklist-overview" class="toc-entry toc-l2">
+Line 774: <span class="toc-num">7.1</span>
+Line 775: <span class="toc-title">Checklist Overview</span>
+Line 776: <span class="toc-dots"></span>
+Line 777: <span class="toc-page-num" data-target="checklist-overview">…</span>
+Line 1120: <th>Port/Protocol</th>
+Line 1127: <td>{{ f.port_protocol or 'N/A' }}</td>
+Line 1285: <td>Insecure Protocols</td>
+Line 1348: // ── Auto TOC page numbers ────────────────────────────────────────────────────────
+Line 1350: // The document flows as: Cover (297mm) → TOC (297mm) → content (A4 chunks)
+Line 1351: (function updateTOCPageNumbers() {
+Line 1356: var toc = document.querySelector('.toc-page');
+Line 1359: var tocH = toc ? toc.offsetHeight : A4_PX;
+Line 1360: var contentStart = coverH + tocH;
+Line 1369: if (top < coverH + tocH) return 2;  // toc
+Line 1375: document.querySelectorAll('.toc-page-num[data-target]').forEach(function (span) {
