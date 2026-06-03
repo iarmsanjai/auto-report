@@ -98,31 +98,7 @@ function MetaForm({ meta, setMeta, toast }) {
             </div>
             <Field label="Scoped IPs Count" value={local.scoped_ips_count || ''} onChange={e => set('scoped_ips_count', e.target.value)} placeholder="e.g. 15" />
           </div>
-          <div className="card">
-            <div className="section-label">Risk Graph by Vulnerabilities</div>
-            <input
-              type="file"
-              accept=".jpg,.jpeg,.png"
-              onChange={(e) => {
-                const file = e.target.files[0];
-                if (file) {
-                  const reader = new FileReader();
-                  reader.onloadend = () => {
-                    set('risk_graph', reader.result);
-                  };
-                  reader.readAsDataURL(file);
-                }
-              }}
-              className="form-input"
-            />
-            {local.risk_graph && (
-              <div style={{ marginTop: 10, textAlign: 'center' }}>
-                <img src={local.risk_graph} alt="Risk Graph" style={{ maxWidth: '100%', maxHeight: 200, border: '1px solid var(--border)', borderRadius: 4 }} />
-                <button type="button" className="btn btn-sm mt-8" onClick={() => set('risk_graph', '')}>Remove</button>
-              </div>
-            )}
 
-          </div>
         </div>
         <div>
           <div className="card mb-16">

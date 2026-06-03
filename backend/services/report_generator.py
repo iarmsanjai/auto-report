@@ -76,6 +76,61 @@ def compute_stats(findings: List[Finding]) -> FindingStats:
     )
 
 
+def _prepare_chart_data(stats: FindingStats) -> tuple[list[dict], int]:
+    """Calculate angles and SVG path data for a dynamic pie chart."""
+    import math
+    total_chart = stats.count_critical + stats.count_high + stats.count_medium + stats.count_low
+    chart_slices = []
+    if total_chart > 0:
+        sevs = [
+            {"name": "Critical", "value": stats.count_critical, "color": "#FF0000"},
+            {"name": "High", "value": stats.count_high, "color": "#FF7E00"},
+            {"name": "Medium", "value": stats.count_medium, "color": "#EAD900"},
+            {"name": "Low", "value": stats.count_low, "color": "#741B47"},
+        ]
+        active_sevs = [s for s in sevs if s["value"] > 0]
+        
+        cx, cy = 150, 150
+        r = 100
+        current_angle = -math.pi / 2
+        
+        for s in active_sevs:
+            percentage = s["value"] / total_chart
+            angle_delta = percentage * 2 * math.pi
+            
+            x1 = cx + r * math.cos(current_angle)
+            y1 = cy + r * math.sin(current_angle)
+            
+            end_angle = current_angle + angle_delta
+            x2 = cx + r * math.cos(end_angle)
+            y2 = cy + r * math.sin(end_angle)
+            
+            large_arc = 1 if angle_delta > math.pi else 0
+            
+            if len(active_sevs) == 1:
+                path_d = f"M {cx} {cy-r} A {r} {r} 0 1 1 {cx} {cy+r} A {r} {r} 0 1 1 {cx} {cy-r}"
+                lx = cx
+                ly = cy - r - 20
+            else:
+                path_d = f"M {cx} {cy} L {x1} {y1} A {r} {r} 0 {large_arc} 1 {x2} {y2} Z"
+                mid_angle = current_angle + angle_delta / 2
+                lx = cx + (r + 25) * math.cos(mid_angle)
+                ly = cy + (r + 25) * math.sin(mid_angle)
+                
+            chart_slices.append({
+                "name": s["name"],
+                "value": s["value"],
+                "color": s["color"],
+                "path_d": path_d,
+                "label_x": lx,
+                "label_y": ly,
+                "percentage": percentage * 100
+            })
+            current_angle = end_angle
+            
+    return chart_slices, total_chart
+
+
 def _build_env() -> Environment:
     """Build Jinja2 environment with templates dir and custom filters."""
     env = Environment(
@@ -103,6 +158,10 @@ def render_report(
     """Render an HTML report using the specified template."""
     stats = compute_stats(findings)
     active = [f for f in findings if not f.false_positive]
+    # Sort active findings by severity (Critical, High, Medium, Low, Info)
+    # and within the same severity by CVSS score descending
+    sev_order = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
+    active.sort(key=lambda f: (sev_order.get(f.cvss.level.lower(), 5), -f.cvss.score))
 
     env = _build_env()
 
@@ -133,6 +192,8 @@ def render_report(
     total_pages = len(active) + 10  # approximate: cover + toc + fixed sections + one page per finding
     checklist_status: dict = {}     # template uses its own default ("Validated") when key absent
 
+    chart_slices, total_chart = _prepare_chart_data(stats)
+
     return tpl.render(
         report=meta,
         findings=active,
@@ -141,6 +202,8 @@ def render_report(
         total_pages=total_pages,
         checklist_status=checklist_status,
         generated_at=datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC"),
+        chart_slices=chart_slices,
+        total_chart=total_chart,
     )
 
 
