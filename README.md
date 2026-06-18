@@ -1,0 +1,133 @@
+# 🛡️ VAPT Report Automation System
+
+A production-grade, full-stack application designed for penetration testing report generation, rendering, and management. Automatically ingest scanner outputs, perform schema validation, remove duplicates, and export gorgeous, print-ready pentest reports in HTML, JSON, and Microsoft Word (.docx) formats.
+
+---
+
+## 🚀 Key Features
+
+*   **Multi-Scanner Ingestion**: Automatically detects and parses CSV, HTML, and PDF formats from industry-standard scanners including **Nessus**, **OpenVAS**, **Burp Suite**, and **Snyk**.
+*   **Dynamic React Editor**: A live editor dashboard where security engineers can modify finding details, add PoC screenshots, validate against Pydantic rules, and see rendered previews in real-time.
+*   **Dual-Theme Rendering Engine**:
+    *   **IARM Corporate (`default_report`)**: Elegant, traditional white background layout using Garamond typography and cobalt blue accents. Fully self-contained with offline-ready inline base64 graphics.
+    *   **Cyberpunk Dark (`modern_report`)**: Cutting-edge tech styling featuring Orbitron headers, Share Tech Mono code structures, and neon cyan overlays.
+*   **Multi-Format Export**: One-click downloads for clean HTML reports, raw template-compatible JSON, and native Word `.docx` documents.
+
+---
+
+## 📂 Project Structure
+
+The project has been fully cleaned of temporary utility scripts and represents a production-ready, decoupled architecture:
+
+```
+automatically_reporting-main/
+├── backend/
+│   ├── api/             → FastAPI routes (Authentication, AI, Findings, Reports)
+│   ├── config/          → Settings and scanner header maps
+│   ├── db.py            → SQLite persistence layer
+│   ├── models/          → Pydantic schemas and CVSS normalization rules
+│   ├── parsers/         → CSV, PDF, and HTML parser engines
+│   ├── services/        → Jinja2 rendering pipeline and markdown sanitizers
+│   ├── templates/       → Jinja2 HTML report templates (default, modern)
+│   └── main.py          → API gateway and entry point
+└── frontend/
+    ├── src/
+    │   ├── components/  → Modular React components (Dashboard, Editor, Previews)
+    │   ├── pages/       → Global state and router mapping
+    │   ├── services/    → Axios api services
+    │   ├── App.jsx      → React root component
+    │   └── App.css      → Cyberpunk global layout stylesheet
+```
+
+---
+
+## 🛠️ Requirements & Setup
+
+| Technology | Minimum Version | Notes |
+|:---|:---|:---|
+| **Python** | 3.10+ | Required for the FastAPI backend |
+| **Node.js** | 18 LTS+ | Installs `npm` for the React frontend |
+
+---
+
+### Terminal 1: FastAPI Backend Setup
+
+Run the following commands inside PowerShell to configure and start your backend application:
+
+```powershell
+cd backend
+
+# Create virtual environment
+python -m venv venv
+
+# Activate virtual environment
+.\venv\Scripts\Activate.ps1
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the live-reloading API server
+uvicorn main:app --reload --port 8000
+```
+
+*   **API Gateway**: `http://localhost:8000`
+*   **Swagger API Docs**: `http://localhost:8000/docs`
+*   **Health Status**: `http://localhost:8000/api/health`
+
+---
+
+### Terminal 2: React Frontend Setup
+
+Run the following commands in a separate terminal window to launch the Vite development server:
+
+```powershell
+cd frontend
+
+# Install project packages
+npm install
+
+# Start Vite development server
+npm run dev
+```
+
+*   **Client Dashboard**: `http://localhost:5173`
+
+> [!NOTE]
+> The Vite development server is pre-configured to proxy request routes from `/api/*` to `http://localhost:8000/api/*` automatically, so both servers must be running concurrently.
+
+---
+
+## 📡 API Reference
+
+| Method | Endpoint | Description | Authed |
+| :--- | :--- | :--- | :--- |
+| **GET** | `/api/health` | Service health status check | No |
+| **POST** | `/api/auth/login` | Authenticate users & return JWT token | No |
+| **POST** | `/api/import/csv` | Ingest Nessus/OpenVAS/Burp/Generic CSV files | Yes |
+| **POST** | `/api/findings/validate`| Validate findings array against Pydantic schema | Yes |
+| **POST** | `/api/findings/deduplicate`| Remove duplicates based on title/description | Yes |
+| **POST** | `/api/export/json` | Return SysReptor-compatible JSON document | Yes |
+| **POST** | `/api/export/html` | Generate custom Jinja2 HTML pentest report | Yes |
+| **POST** | `/api/export/docx` | Compile pentest report directly into Word `.docx` | Yes |
+| **GET** | `/api/templates` | List all available templates in local folder | Yes |
+
+---
+
+## 🎨 Report Templates
+
+You can toggle report styling dynamically during export by utilizing the `template` query parameter:
+
+### 1. IARM Corporate Default Template (`template=VA_template/default_report`)
+*   Traditional white-paper typography featuring Garamond and custom cobalt accents (`#1f86d0`).
+*   Designed to be **100% offline-ready**: Cover headers, watermarks, accredited logos, and rating scales are pre-inlined into the HTML as Base64 data strings.
+
+### 2. Cyberpunk Dark Template (`template=VA_template/modern_report`)
+*   Sleek dark mode styling leveraging `Orbitron`, `Exo 2`, and `Share Tech Mono` Google Fonts.
+*   Highly interactive with neon green code blocks, glowing CVSS badge layouts, and clean flexbox alignment.
+
+---
+
+## 🛡️ Security Implementations
+
+*   **Server-side Sanitization**: Raw markdown descriptions and PoC blocks are parsed via `markdown2` and strictly sanitized using `bleach` to prevent Cross-Site Scripting (XSS) within report files.
+*   **JWT Middleware**: Standard bearer tokens are required to perform database transactions, report exports, and AI analysis.

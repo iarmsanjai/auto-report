@@ -1,0 +1,48 @@
+# ── VAPT Report Automation System — Python Dependencies ──────────────────────
+# Direct dependencies only (transitive deps are resolved automatically by pip).
+# Pin exact versions for reproducible, secure builds.
+# To upgrade: update version pins, then test the full app before deploying.
+#
+# Install:  pip install -r requirements.txt
+# Audit:    pip-audit -r requirements.txt
+
+# ── Web Framework ─────────────────────────────────────────────────────────────
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+python-multipart==0.0.9
+starlette==0.38.6
+
+# ── Data Validation ───────────────────────────────────────────────────────────
+pydantic==2.9.2
+pydantic-settings==2.5.2
+
+# ── Data Processing ───────────────────────────────────────────────────────────
+pandas==2.2.3
+
+# ── Templating & Markup ───────────────────────────────────────────────────────
+jinja2==3.1.4
+MarkupSafe==3.0.3
+bleach==6.1.0
+markdown2==2.5.0
+beautifulsoup4==4.12.3
+
+# ── Document Export ───────────────────────────────────────────────────────────
+PyMuPDF==1.25.5
+python-docx==1.2.0
+htmldocx==0.0.6
+
+# ── Authentication & Security ─────────────────────────────────────────────────
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
+cryptography==48.0.1
+python-dotenv==1.2.2
+
+# ── AI / External APIs ────────────────────────────────────────────────────────
+# google-genai: official Google Gemini SDK (replaces deprecated google-generativeai)
+google-genai==2.8.0
+openai==1.55.3
+
+# ── HTTP Client ───────────────────────────────────────────────────────────────
+httpx==0.28.1
+requests==2.34.2
