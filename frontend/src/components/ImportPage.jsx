@@ -53,40 +53,67 @@ export default function ImportPage({ onImportDone, onBack, authUser, toast }) {
 
   const currentType = SCAN_TYPES.find(t => t.id === selectedType)
 
-  const process = useCallback(async (file) => {
-    if (!currentType) return
-    const ext = file.name.split('.').pop().toLowerCase()
+  const processFiles = useCallback(async (files) => {
+    if (!currentType || files.length === 0) return
 
-    if (selectedType === 'nessus' && ext !== 'csv') {
-      toast('Nessus import requires a .csv file', 'error')
-      return
+    // Filter and check extensions
+    const validFiles = []
+    for (const file of files) {
+      const ext = file.name.split('.').pop().toLowerCase()
+      if (selectedType === 'nessus' && ext !== 'csv') {
+        toast(`Skipped '${file.name}': Nessus import requires a .csv file`, 'warn')
+      } else {
+        validFiles.push(file)
+      }
     }
+
+    if (validFiles.length === 0) return
 
     setLoading(true)
     setPreview(null)
+
+    let allFindings = []
+    let allWarnings = []
+    let fileNames = []
+    let successCount = 0
+
     try {
-      let result
-      if (selectedType === 'nessus') {
-        result = await importCSV(file)
-      } else {
-        toast('This scanner type is not yet supported', 'warn')
-        setLoading(false)
+      for (const file of validFiles) {
+        let result
+        if (selectedType === 'nessus') {
+          result = await importCSV(file)
+        } else {
+          toast('This scanner type is not yet supported', 'warn')
+          setLoading(false)
+          return
+        }
+
+        if (result.count > 0) {
+          allFindings = [...allFindings, ...result.findings]
+          if (result.warnings && result.warnings.length > 0) {
+            allWarnings = [...allWarnings, ...result.warnings.map(w => `[${file.name}] ${w}`)]
+          }
+          fileNames.push(file.name)
+          successCount++
+        } else {
+          toast(`No findings found in ${file.name}. ${result.warnings?.[0] || ''}`, 'warn')
+        }
+      }
+
+      if (successCount === 0) {
+        toast('No findings were extracted from the uploaded file(s).', 'warn')
         return
       }
 
-      if (!result.count) {
-        toast(`No findings found in ${file.name}. ${result.warnings?.[0] || ''}`, 'warn')
-        return
-      }
       setPreview({
-        name: file.name,
-        count: result.count,
-        findings: result.findings,
-        warnings: result.warnings || [],
+        name: fileNames.join(', '),
+        count: allFindings.length,
+        findings: allFindings,
+        warnings: allWarnings,
         scanType: selectedType,
         template: currentType.template,
       })
-      toast(`Extracted ${result.count} findings from ${file.name}`)
+      toast(`Extracted ${allFindings.length} findings from ${successCount} file(s)`)
     } catch (err) {
       toast(err?.response?.data?.detail || 'Upload failed — is the backend running?', 'error')
     } finally {
@@ -97,9 +124,9 @@ export default function ImportPage({ onImportDone, onBack, authUser, toast }) {
   const onDrop = useCallback(e => {
     e.preventDefault()
     setDrag(false)
-    const file = e.dataTransfer.files[0]
-    if (file) process(file)
-  }, [process])
+    const files = Array.from(e.dataTransfer.files)
+    if (files.length > 0) processFiles(files)
+  }, [processFiles])
 
   const confirm = (mode) => {
     onImportDone(preview.findings, mode, preview.scanType, preview.template)
@@ -408,9 +435,10 @@ export default function ImportPage({ onImportDone, onBack, authUser, toast }) {
               <input
                 ref={fileRef}
                 type="file"
+                multiple
                 accept={currentType.accept}
                 style={{ display: 'none' }}
-                onChange={e => e.target.files[0] && process(e.target.files[0])}
+                onChange={e => e.target.files && processFiles(Array.from(e.target.files))}
               />
             </div>
           </div>

@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { exportHTML, exportDOCX, exportPDF, downloadBlob, todayStr, updateReportStatus } from '../services/api'
+import { exportHTML, exportPDF, downloadBlob, todayStr, updateReportStatus } from '../services/api'
 
 function computeStats(findings) {
   const active = findings.filter(f => !f.false_positive)
@@ -19,7 +19,6 @@ const SEV_TEXT   = { critical: '#fff', high: '#fff', medium: '#fff', low: '#fff'
 export default function ReportPreview({ findings, meta, toast, authUser, currentReportId, currentReportStatus, setCurrentReportStatus }) {
   const [loading, setLoading]   = useState(false)
   const [pdfLoading, setPdfLoading] = useState(false)
-  const [docxLoading, setDocxLoading] = useState(false)
   const [template, setTemplate] = useState('default_report')
   const printIframeRef = useRef(null)
 
@@ -28,11 +27,11 @@ export default function ReportPreview({ findings, meta, toast, authUser, current
   const payload = { report: meta, findings, finding_stats: stats }
 
   const getFileName = (ext) => {
-    if (meta.document_title) {
-      return `${meta.document_title.replace(/\s+/g, '_')}.${ext}`
-    }
-    const slug = (meta.client_name || 'report').replace(/\s+/g, '_')
-    return `vapt_report_${slug}_${todayStr()}.${ext}`
+    const appName = (meta.application_name || 'App').trim()
+    const date = new Date()
+    const month = date.toLocaleString('default', { month: 'long' })
+    const year = date.getFullYear()
+    return `${appName} Vulnerability Assessment Report - ${month} ${year}.${ext}`
   }
 
 
@@ -78,18 +77,6 @@ export default function ReportPreview({ findings, meta, toast, authUser, current
     }
   }
 
-  const doExportDOCX = async () => {
-    setDocxLoading(true)
-    try {
-      const blob = await exportDOCX(payload, template)
-      downloadBlob(blob, getFileName('docx'), 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-      toast('MS Word report downloaded ✓')
-    } catch (err) {
-      toast('DOCX export failed', 'error')
-    } finally {
-      setDocxLoading(false)
-    }
-  }
 
   const handleRequestApproval = async () => {
     if (!currentReportId) {
@@ -202,8 +189,7 @@ export default function ReportPreview({ findings, meta, toast, authUser, current
       )}
 
       {/* Template selector + export buttons */}
-      {/* Template selector + export buttons */}
-      <div className="grid-2" style={{ gap: 16, marginBottom: 20 }}>
+      <div style={{ marginBottom: 20 }}>
         {/* PDF export */}
         <div className="card" style={{ borderColor: '#f6872522' }}>
           <div style={{ color: '#f68725', fontWeight: 700, fontSize: 13, marginBottom: 8 }}>📄 PDF Report</div>
@@ -229,25 +215,6 @@ export default function ReportPreview({ findings, meta, toast, authUser, current
             </button>
           </div>
         </div>
-
-        {/* DOCX export */}
-        <div className="card" style={{ borderColor: '#3b82f622' }}>
-          <div style={{ color: '#3b82f6', fontWeight: 700, fontSize: 13, marginBottom: 8 }}>📝 Word Report</div>
-          <div style={{ fontSize: 11, color: 'var(--dim)', lineHeight: 1.8, marginBottom: 14 }}>
-            Generates a standard <strong>.docx</strong> file for MS Word. Preserves styling and tables perfectly. Great for manual editing.
-          </div>
-
-          <button
-            className="btn btn-sm"
-            style={{ background: '#3b82f6', color: '#fff', fontWeight: 700, border: 'none' }}
-            onClick={doExportDOCX}
-            disabled={docxLoading || loading || pdfLoading}
-          >
-            {docxLoading ? <span className="spinner" /> : '↓'} Download DOCX
-          </button>
-        </div>
-
-
       </div>
 
       {/* Hidden iframe for PDF printing */}

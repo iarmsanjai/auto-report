@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react'
-import { generateAIContent } from '../services/api'
+import { useState, useCallback, useRef } from 'react'
+import { generateAIContent, importCSV } from '../services/api'
 
 const EMPTY_FINDING = {
   id: '', title: '', summary: '', description: '', impact: '', recommendation: '',
@@ -271,6 +271,143 @@ function FindingForm({ initial, onSave, onCancel, toast }) {
   )
 }
 
+function EditorImportPanel({ findings, setFindings, toast, onSuccess }) {
+  const [drag, setDrag] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [preview, setPreview] = useState(null)
+  const fileRef = useRef()
+
+  const processFiles = async (files) => {
+    const validFiles = []
+    for (const file of files) {
+      const ext = file.name.split('.').pop().toLowerCase()
+      if (ext !== 'csv') {
+        toast(`Skipped '${file.name}': Nessus import requires a .csv file`, 'warn')
+      } else {
+        validFiles.push(file)
+      }
+    }
+
+    if (validFiles.length === 0) return
+
+    setLoading(true)
+    setPreview(null)
+
+    let allFindings = []
+    let fileNames = []
+    let successCount = 0
+
+    try {
+      for (const file of validFiles) {
+        const result = await importCSV(file)
+        if (result.count > 0) {
+          allFindings = [...allFindings, ...result.findings]
+          fileNames.push(file.name)
+          successCount++
+        } else {
+          toast(`No findings found in ${file.name}`, 'warn')
+        }
+      }
+
+      if (successCount === 0) {
+        toast('No findings were extracted.', 'warn')
+        return
+      }
+
+      setPreview({
+        names: fileNames.join(', '),
+        count: allFindings.length,
+        findings: allFindings,
+      })
+      toast(`Extracted ${allFindings.length} findings from ${successCount} file(s)`)
+    } catch (err) {
+      toast(err?.response?.data?.detail || 'Upload failed — check backend status.', 'error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const onDrop = (e) => {
+    e.preventDefault()
+    setDrag(false)
+    const files = Array.from(e.dataTransfer.files)
+    if (files.length > 0) processFiles(files)
+  }
+
+  const handleMerge = () => {
+    if (!preview) return
+    setFindings(prev => [...prev, ...preview.findings])
+    toast(`Merged ${preview.findings.length} findings into current project ✓`)
+    setPreview(null)
+    onSuccess()
+  }
+
+  return (
+    <div className="card" style={{ maxWidth: 650, margin: '0 auto', padding: 24 }}>
+      <div className="section-label" style={{ marginBottom: 12 }}>↑ Add Scanner CSV to Active Project</div>
+      <p style={{ fontSize: 12, color: 'var(--dim)', marginBottom: 20 }}>
+        Upload one or more Nessus CSV files to extract and merge findings into your current active project session.
+      </p>
+
+      <div
+        onDragOver={e => { e.preventDefault(); setDrag(true) }}
+        onDragLeave={() => setDrag(false)}
+        onDrop={onDrop}
+        onClick={() => !preview && fileRef.current?.click()}
+        style={{
+          border: '2px dashed var(--border)',
+          borderRadius: 8,
+          padding: '30px 20px',
+          textAlign: 'center',
+          background: drag ? 'rgba(0,212,255,0.05)' : 'var(--bg)',
+          borderColor: drag ? 'var(--cyan)' : 'var(--border)',
+          cursor: preview ? 'default' : 'pointer',
+          transition: 'all 0.15s',
+          marginBottom: 20
+        }}
+      >
+        {loading ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+            <div className="spinner" style={{ width: 28, height: 28 }} />
+            <div style={{ fontSize: 12, color: 'var(--dim)' }}>Parsing CSV data...</div>
+          </div>
+        ) : preview ? (
+          <div>
+            <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text)', marginBottom: 12 }}>
+              Ready to merge: {preview.count} findings from {preview.names}
+            </div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+              <button className="btn btn-success btn-sm" onClick={handleMerge}>
+                + Merge findings
+              </button>
+              <button className="btn btn-sm" onClick={() => setPreview(null)}>
+                ✕ Clear
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <div style={{ fontSize: 32, marginBottom: 8, opacity: 0.5 }}>🛡</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>
+              Drag CSV files here or click to browse
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--dim)' }}>Accepts Nessus .csv format</div>
+          </div>
+        )}
+
+        <input
+          ref={fileRef}
+          type="file"
+          multiple
+          accept=".csv"
+          style={{ display: 'none' }}
+          onChange={e => e.target.files && processFiles(Array.from(e.target.files))}
+        />
+      </div>
+    </div>
+  )
+}
+
 // ─── DataEditor wrapper — toggles meta config vs finding form ─────────────────
 export default function DataEditor({ meta, setMeta, findings, setFindings, editTarget, setEditTarget, toast }) {
   const [activeTab, setActiveTab] = useState(editTarget ? 'finding' : 'meta')
@@ -302,6 +439,7 @@ export default function DataEditor({ meta, setMeta, findings, setFindings, editT
         {[
           { id: 'meta', label: '⚙ Report Config' },
           { id: 'finding', label: editTarget ? '✎ Edit Finding' : '+ Add Finding' },
+          { id: 'import_csv', label: '↑ Import CSV' },
         ].map(t => (
           <button
             key={t.id}
@@ -328,10 +466,16 @@ export default function DataEditor({ meta, setMeta, findings, setFindings, editT
         </button>
       </div>
 
-      {activeTab === 'meta'
-        ? <MetaForm meta={meta} setMeta={setMeta} toast={toast} />
-        : <FindingForm initial={editTarget} onSave={handleSave} onCancel={handleCancel} toast={toast} />
-      }
+      {activeTab === 'meta' && <MetaForm meta={meta} setMeta={setMeta} toast={toast} />}
+      {activeTab === 'finding' && <FindingForm initial={editTarget} onSave={handleSave} onCancel={handleCancel} toast={toast} />}
+      {activeTab === 'import_csv' && (
+        <EditorImportPanel
+          findings={findings}
+          setFindings={setFindings}
+          toast={toast}
+          onSuccess={() => setActiveTab('meta')}
+        />
+      )}
     </div>
   )
 }

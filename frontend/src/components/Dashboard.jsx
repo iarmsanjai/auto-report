@@ -154,7 +154,7 @@ export default function Dashboard({ findings, meta, setPage, onLoadSample }) {
             No findings yet. Import a scan report or add findings manually.
           </div>
           <div className="flex gap-8 items-center" style={{ justifyContent: 'center' }}>
-            <button className="btn btn-primary" onClick={() => setPage('upload')}>↑ Import Data</button>
+            <button className="btn btn-primary" onClick={() => setPage('import')}>↑ Import Data</button>
             <button className="btn btn-success" onClick={() => setPage('editor')}>+ Add Finding</button>
             <button className="btn" onClick={onLoadSample}>⬡ Load Sample</button>
           </div>
