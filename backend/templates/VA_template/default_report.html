@@ -1251,9 +1251,9 @@
               <table class="finding-meta-table">
                 <thead>
                   <tr>
-                    <th style="width:25%">Severity</th>
-                    <th style="width:40%">IP Address</th>
-                    <th style="width:20%">Port</th>
+                    <th style="width:20%">Severity</th>
+                    <th style="width:45%">Target Component / Host</th>
+                    <th style="width:20%">Port / Protocol</th>
                     <th style="width:15%">ID</th>
                   </tr>
                 </thead>
@@ -1261,17 +1261,61 @@
                   <tr>
                     <td class="severity-value sev-{{ lvl }}">{{ lvl | capitalize }}</td>
                     <td>
-                      {% if f.affected_hosts %}
-                        {{ f.affected_hosts | map(attribute='ip') | join(', ') }}
+                      {% if f.affected_hosts and f.affected_hosts | length > 0 %}
+                        {{ f.affected_hosts | map(attribute='ip') | unique | join(', ') }}
                       {% elif f.affected_components %}
                         {{ f.affected_components | join(', ') }}
                       {% else %}
                         N/A
                       {% endif %}
                     </td>
-                    <td>{{ f.port_protocol or 'N/A' }}</td>
+                    <td>
+                      {% if f.affected_hosts and f.affected_hosts | length > 0 %}
+                        {{ f.affected_hosts | map(attribute='port') | select | unique | join(', ') or f.port_protocol or 'N/A' }}
+                      {% else %}
+                        {{ f.port_protocol or 'N/A' }}
+                      {% endif %}
+                    </td>
                     <td style="font-weight: bold;">{{ f_id }}</td>
                   </tr>
+                </tbody>
+              </table>
+
+              <h3 style="font-size: 14px; font-weight: bold; margin: 16px 0 8px; color: #1a365d;">5.{{ loop.index }}.2 Affected Host</h3>
+              <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 1px solid #000;">
+                <thead>
+                  <tr style="background-color: #00a2ff; color: #ffffff;">
+                    <th style="width: 40%; padding: 8px; text-align: center; border: 1px solid #000; font-weight: bold;">Port</th>
+                    <th style="width: 60%; padding: 8px; text-align: center; border: 1px solid #000; font-weight: bold;">Host</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if f.affected_hosts and f.affected_hosts | length > 0 %}
+                    {% for host in f.affected_hosts %}
+                    <tr>
+                      <td style="text-align: center; padding: 6px; border: 1px solid #000;">
+                        {% if host.port and host.protocol and host.protocol.lower() not in host.port.lower() %}
+                          {{ host.port }}/{{ host.protocol }}
+                        {% else %}
+                          {{ host.port or f.port_protocol or 'N/A' }}
+                        {% endif %}
+                      </td>
+                      <td style="text-align: center; padding: 6px; border: 1px solid #000;">{{ host.ip or 'N/A' }}</td>
+                    </tr>
+                    {% endfor %}
+                  {% elif f.affected_components and f.affected_components | length > 0 %}
+                    {% for comp in f.affected_components %}
+                    <tr>
+                      <td style="text-align: center; padding: 6px; border: 1px solid #000;">{{ f.port_protocol or 'N/A' }}</td>
+                      <td style="text-align: center; padding: 6px; border: 1px solid #000;">{{ comp }}</td>
+                    </tr>
+                    {% endfor %}
+                  {% else %}
+                    <tr>
+                      <td style="text-align: center; padding: 6px; border: 1px solid #000;">{{ f.port_protocol or 'N/A' }}</td>
+                      <td style="text-align: center; padding: 6px; border: 1px solid #000;">N/A</td>
+                    </tr>
+                  {% endif %}
                 </tbody>
               </table>
 

@@ -29,7 +29,7 @@ from models.schemas import (
 from parsers.csv_parser import parse_csv
 from security.middleware import check_rate_limit, get_client_ip, rate_limit_response
 from security.validators import InputValidator
-from services.report_generator import compute_stats, render_report
+from services.report_generator import compute_stats, render_report, group_findings_by_vulnerability
 from services.validation import validate_findings
 
 log = logging.getLogger(__name__)
@@ -107,23 +107,10 @@ async def get_stats(findings: List[Finding]):
 @router.post("/findings/deduplicate", response_model=List[Finding])
 async def deduplicate(findings: List[Finding]):
     """
-    Remove duplicate findings (same title + description + recommendation + affected components).
+    Remove duplicate findings by vulnerability heading and merge affected endpoints.
     Returns deduplicated list sorted by severity.
     """
-    seen: set = set()
-    unique: List[Finding] = []
-    for f in findings:
-        components = tuple(sorted(f.affected_components)) if f.affected_components else ()
-        key = (
-            f.title.strip().lower() if f.title else "",
-            f.description.strip().lower() if f.description else "",
-            f.recommendation.strip().lower() if f.recommendation else "",
-            components,
-        )
-        if key not in seen:
-            seen.add(key)
-            unique.append(f)
-    return unique
+    return group_findings_by_vulnerability(findings)
 
 
 # ─── Export Endpoints ──────────────────────────────────────────────────────────

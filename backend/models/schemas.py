@@ -86,6 +86,8 @@ class AffectedHost(BaseModel):
     """Affected host entry inside a finding (VA template)."""
     type: str = Field(default="", max_length=64)
     ip: str = Field(default="", max_length=45)
+    port: str = Field(default="", max_length=64)
+    protocol: str = Field(default="", max_length=32)
 
     model_config = {"extra": "ignore"}
 

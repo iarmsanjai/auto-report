@@ -104,92 +104,56 @@ def _resolve(row: pd.Series, col_map: List[str], df_cols_lower: dict) -> str:
     return ""
 
 
-def _build_finding(row: pd.Series, field_map: dict, df_cols_lower: dict) -> Finding | None:
-    """Map a CSV row to a Finding. Returns None if row should be skipped."""
+def _get_vulnerability_key(row: pd.Series, field_map: dict, df_cols_lower: dict) -> tuple:
+    """
+    Construct a stable vulnerability grouping key using vulnerability-identifying fields:
+    1. Plugin ID / Plugin / PluginId
+    2. Vulnerability Name / Plugin Name
+    3. CVE / CVEs
+    4. CWE
+    Does NOT include Host IP, Port, Protocol, or Hostname.
+    """
+    plugin_id = _resolve(row, ["Plugin ID", "Plugin", "PluginId", "ID", "NVT OID", "Issue ID"], df_cols_lower)
+    title = _resolve(row, field_map.get("title", []), df_cols_lower)
+    cve = _resolve(row, ["CVE", "CVEs", "CVE ID", "cve_id"], df_cols_lower)
+    cwe = _resolve(row, field_map.get("cwe", []), df_cols_lower)
 
-    def get(key: str) -> str:
-        return _resolve(row, field_map.get(key, []), df_cols_lower)
+    if plugin_id:
+        return ("plugin_id", plugin_id.lower().strip())
+    elif cve:
+        return ("cve_title", cve.lower().strip(), title.lower().strip())
+    elif cwe and title:
+        return ("cwe_title", cwe.lower().strip(), title.lower().strip())
+    else:
+        return ("title", title.lower().strip())
 
-    risk_raw = get("cvss.level")
-    level = _norm_sev(risk_raw)
 
-    # Skip rows with no meaningful severity
-    if not risk_raw or risk_raw.lower() in ("none", "passed", "open", "n/a"):
-        return None
+def _extract_row_endpoint(row: pd.Series, field_map: dict, df_cols_lower: dict) -> Tuple[str, str, str]:
+    """
+    Extract (host_ip, port, protocol) for a single CSV row.
+    """
+    host_ip = _resolve(row, field_map.get("affected_components", []) + ["Host", "IP", "IP Address", "Hostname", "Target", "URL"], df_cols_lower)
+    port = _resolve(row, field_map.get("port", []), df_cols_lower)
+    protocol = _resolve(row, field_map.get("protocol", []), df_cols_lower)
 
-    title = get("title") or "Untitled Finding"
-
-    score_raw = get("cvss.score")
-    try:
-        score = float(score_raw)
-    except (ValueError, TypeError):
-        score = 0.0
-
-    # References — may be newline-separated
-    refs_raw = get("references")
-    refs = [r.strip() for r in refs_raw.replace(";", "\n").split("\n") if r.strip() and r.strip().lower() != "nan"]
-
-    # Components
-    component = get("affected_components")
-    components = [component] if component else []
-
-    # Payloads from poc field if present
-    poc = get("poc")
-
-    port = get("port")
-    protocol = get("protocol")
-    port_protocol = ""
-    if port and protocol:
-        port_protocol = f"{port}/{protocol}"
-    elif port or protocol:
-        port_protocol = port or protocol
-
-    if not port_protocol.strip():
-        # Fallback 1: Try to extract from affected_components
-        comp = get("affected_components")
-        if comp:
-            ext_port, ext_proto = extract_port_from_string(comp)
+    if host_ip:
+        if not port:
+            ext_port, ext_proto = extract_port_from_string(host_ip)
             if ext_port:
-                port_protocol = f"{ext_port}/{ext_proto}" if ext_proto else ext_port
+                port = ext_port
+                if ext_proto and not protocol:
+                    protocol = ext_proto
+        # Strip port or scheme from host_ip if embedded (e.g. "192.168.0.1:8080" -> "192.168.0.1")
+        m = re.match(r'^(?:https?://)?([^:/]+)', host_ip, re.IGNORECASE)
+        if m:
+            host_ip = m.group(1)
 
-        # Fallback 2: Check other common columns in raw row (URL, Host, IP, Target, etc.)
-        if not port_protocol:
-            for field in ["host", "ip", "url", "target", "endpoint", "destination", "dest"]:
-                val = _resolve(row, [field], df_cols_lower)
-                if val:
-                    ext_port, ext_proto = extract_port_from_string(val)
-                    if ext_port:
-                        port_protocol = f"{ext_port}/{ext_proto}" if ext_proto else ext_port
-                        break
-
-    return Finding(
-        id=str(uuid.uuid4())[:8],
-        title=title,
-        summary=get("summary"),
-        description=get("description"),
-        impact=get("impact"),
-        recommendation=get("recommendation"),
-        cvss=CVSSModel(
-            score=score,
-            vector=get("cvss.vector"),
-            level=level,
-        ),
-        ease=_norm_ease(""),
-        cwe=get("cwe"),
-        affected_components=components,
-        payload=[],
-        poc=poc,
-        references=refs,
-        validated=False,
-        false_positive=False,
-        source="csv",
-        port_protocol=port_protocol,
-    )
+    return host_ip.strip(), port.strip(), protocol.strip()
 
 
 def parse_csv(content: bytes, filename: str = "") -> ImportResult:
     """
-    Parse a CSV file and return an ImportResult with normalized findings.
+    Parse a CSV file and return an ImportResult with normalized, grouped findings.
     Auto-detects encoding and scanner type.
     """
     warnings = []
@@ -216,21 +180,148 @@ def parse_csv(content: bytes, filename: str = "") -> ImportResult:
     # Build a lowercase column lookup: lower_name → original_name
     df_cols_lower = {c.lower().strip(): c for c in df.columns}
 
-    findings: List[Finding] = []
+    grouped_data: dict[tuple, dict] = {}
     skipped = 0
 
     for _, row in df.iterrows():
         try:
-            f = _build_finding(row, field_map, df_cols_lower)
-            if f:
-                findings.append(f)
-            else:
+            def get(key: str) -> str:
+                return _resolve(row, field_map.get(key, []), df_cols_lower)
+
+            risk_raw = get("cvss.level")
+            level = _norm_sev(risk_raw)
+
+            # Skip rows with no meaningful severity
+            if not risk_raw or risk_raw.lower() in ("none", "passed", "open", "n/a"):
                 skipped += 1
+                continue
+
+            title = get("title") or "Untitled Finding"
+
+            score_raw = get("cvss.score")
+            try:
+                score = float(score_raw)
+            except (ValueError, TypeError):
+                score = 0.0
+
+            refs_raw = get("references")
+            refs = [r.strip() for r in refs_raw.replace(";", "\n").split("\n") if r.strip() and r.strip().lower() != "nan"]
+
+            poc = get("poc")
+
+            group_key = _get_vulnerability_key(row, field_map, df_cols_lower)
+            host_ip, port, protocol = _extract_row_endpoint(row, field_map, df_cols_lower)
+
+            if group_key not in grouped_data:
+                grouped_data[group_key] = {
+                    "title": title,
+                    "summary": get("summary"),
+                    "description": get("description"),
+                    "impact": get("impact"),
+                    "recommendation": get("recommendation"),
+                    "cvss_vector": get("cvss.vector"),
+                    "cwe": get("cwe"),
+                    "ease": _norm_ease(""),
+                    "severities": [level],
+                    "scores": [score],
+                    "poc": poc,
+                    "references": set(refs),
+                    "endpoints_seen": set(),
+                    "affected_hosts": [],
+                }
+
+            group = grouped_data[group_key]
+            group["severities"].append(level)
+            group["scores"].append(score)
+            if refs:
+                group["references"].update(refs)
+            if not group["description"] and get("description"):
+                group["description"] = get("description")
+            if not group["impact"] and get("impact"):
+                group["impact"] = get("impact")
+            if not group["recommendation"] and get("recommendation"):
+                group["recommendation"] = get("recommendation")
+            if not group["cwe"] and get("cwe"):
+                group["cwe"] = get("cwe")
+            if not group["poc"] and poc:
+                group["poc"] = poc
+
+            # Deduplicate Affected Endpoints: IP + Port + Protocol
+            ep_key = (host_ip, port, protocol.lower())
+            if (host_ip or port) and ep_key not in group["endpoints_seen"]:
+                group["endpoints_seen"].add(ep_key)
+                from models.schemas import AffectedHost
+                group["affected_hosts"].append(
+                    AffectedHost(ip=host_ip, port=port, protocol=protocol)
+                )
+
         except Exception as e:
             log.warning("Row parse error: %s", e)
             skipped += 1
 
-    # Sort by severity
+    findings: List[Finding] = []
+    for key, group in grouped_data.items():
+        unique_sevs = set(group["severities"])
+        # Pick highest severity (Critical=0, High=1, Medium=2, Low=3, Info=4)
+        highest_level = min(group["severities"], key=lambda s: SEV_ORDER.get(s, 99))
+        highest_score = max(group["scores"]) if group["scores"] else 0.0
+
+        if len(unique_sevs) > 1:
+            msg = f"Vulnerability '{group['title']}' has inconsistent severities across endpoints: {sorted(list(unique_sevs))}. Retained highest severity '{highest_level}'."
+            log.warning(msg)
+            warnings.append(msg)
+
+        # Build affected_components list
+        affected_comps = []
+        for ah in group["affected_hosts"]:
+            if ah.ip and ah.port:
+                comp_str = f"{ah.ip}:{ah.port}"
+            elif ah.ip:
+                comp_str = ah.ip
+            elif ah.port:
+                comp_str = f"Port {ah.port}"
+            else:
+                comp_str = ""
+            if comp_str and comp_str not in affected_comps:
+                affected_comps.append(comp_str)
+
+        # Build port_protocol summary
+        unique_ports = []
+        for ah in group["affected_hosts"]:
+            p_str = ah.port
+            if ah.protocol and p_str and ah.protocol.lower() not in p_str.lower():
+                p_str = f"{ah.port}/{ah.protocol}"
+            if p_str and p_str not in unique_ports:
+                unique_ports.append(p_str)
+        port_protocol_str = ", ".join(unique_ports)
+
+        f = Finding(
+            id=str(uuid.uuid4())[:8],
+            title=group["title"],
+            summary=group["summary"],
+            description=group["description"],
+            impact=group["impact"],
+            recommendation=group["recommendation"],
+            cvss=CVSSModel(
+                score=highest_score,
+                vector=group["cvss_vector"],
+                level=highest_level,
+            ),
+            ease=group["ease"],
+            cwe=group["cwe"],
+            affected_components=affected_comps,
+            affected_hosts=group["affected_hosts"],
+            payload=[],
+            poc=group["poc"],
+            references=sorted(list(group["references"])),
+            validated=False,
+            false_positive=False,
+            source="csv",
+            port_protocol=port_protocol_str,
+        )
+        findings.append(f)
+
+    # Sort grouped findings by severity (Critical → High → Medium → Low → Info)
     findings.sort(key=lambda f: SEV_ORDER.get(f.cvss.level, 99))
 
     if not findings:

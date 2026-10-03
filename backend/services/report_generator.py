@@ -150,12 +150,78 @@ def _build_env() -> Environment:
     return env
 
 
+def group_findings_by_vulnerability(findings: List[Finding]) -> List[Finding]:
+    """
+    Group findings by vulnerability heading (title).
+    Merges all IP & Port endpoints into a single vulnerability's affected_hosts list.
+    Keeps 1 description, 1 poc, 1 recommendation per vulnerability.
+    """
+    sev_order = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
+    grouped: dict[str, tuple[Finding, set]] = {}
+
+    for f in findings:
+        norm_title = f.title.strip().lower() if f.title else "untitled finding"
+        if norm_title not in grouped:
+            new_f = f.model_copy(deep=True)
+            ep_keys = set()
+            clean_hosts = []
+            for h in new_f.affected_hosts:
+                k = (h.ip.strip(), h.port.strip(), h.protocol.strip().lower())
+                if k not in ep_keys:
+                    ep_keys.add(k)
+                    clean_hosts.append(h)
+            new_f.affected_hosts = clean_hosts
+            grouped[norm_title] = (new_f, ep_keys)
+        else:
+            existing_f, ep_keys = grouped[norm_title]
+
+            # Keep highest severity
+            if sev_order.get(f.cvss.level.lower(), 99) < sev_order.get(existing_f.cvss.level.lower(), 99):
+                existing_f.cvss.level = f.cvss.level
+                existing_f.cvss.score = max(existing_f.cvss.score, f.cvss.score)
+
+            # Merge all IP & Port endpoints into the single vulnerability's affected_hosts table
+            for new_h in f.affected_hosts:
+                k = (new_h.ip.strip(), new_h.port.strip(), new_h.protocol.strip().lower())
+                if k not in ep_keys:
+                    ep_keys.add(k)
+                    existing_f.affected_hosts.append(new_h)
+
+            # Merge affected_components
+            for comp in f.affected_components:
+                if comp not in existing_f.affected_components:
+                    existing_f.affected_components.append(comp)
+
+            # Merge references
+            for ref in f.references:
+                if ref not in existing_f.references:
+                    existing_f.references.append(ref)
+
+            # Keep 1 description, 1 poc, 1 recommendation
+            if not existing_f.description and f.description:
+                existing_f.description = f.description
+            if not existing_f.poc and f.poc:
+                existing_f.poc = f.poc
+            if not existing_f.recommendation and f.recommendation:
+                existing_f.recommendation = f.recommendation
+            if not existing_f.impact and f.impact:
+                existing_f.impact = f.impact
+            if not existing_f.cwe and f.cwe:
+                existing_f.cwe = f.cwe
+
+    result = [f for f, _ in grouped.values()]
+    result.sort(key=lambda f: (sev_order.get(f.cvss.level.lower(), 5), -f.cvss.score))
+    return result
+
+
 def render_report(
     meta: ReportMeta,
     findings: List[Finding],
     template_name: str = "default_report",
 ) -> str:
     """Render an HTML report using the specified template."""
+    # Always group findings by vulnerability heading before rendering
+    findings = group_findings_by_vulnerability(findings)
     stats = compute_stats(findings)
     active = [f for f in findings if not f.false_positive]
     # Sort active findings by severity (Critical, High, Medium, Low, Info)
