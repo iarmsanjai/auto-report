@@ -426,9 +426,9 @@
     }
 
     .desc-block {
-      background: #f9fbff;
-      padding: 10px 14px;
-      border-radius: 4px;
+      background: transparent !important;
+      padding: 0;
+      margin-bottom: 12px;
     }
 
     .poc-wrapper {
@@ -1322,7 +1322,7 @@
               </table>
 
               {% if f.description %}
-              <h3 style="font-size: 16px; font-weight: bold; margin: 16px 0 8px; color: #000;">Description:</h3>
+              <p class="section-label">Description</p>
               <div class="desc-block" style="text-align: justify;">{{ f.description | md }}</div>
               {% endif %}
 
