@@ -431,18 +431,29 @@
       border-radius: 4px;
     }
 
+    .poc-wrapper {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      margin-top: 12px;
+      margin-bottom: 12px;
+    }
+
     .poc-block {
-      background: #0a0a14;
-      color: #a0ffa0;
+      background: #f4f4f4 !important;
+      color: #111111 !important;
       font-family: 'EB Garamond', Garamond, serif;
       font-size: 11px;
-      padding: 12px;
-      border-radius: 5px;
+      line-height: 1.5;
+      padding: 12px 14px;
+      border-radius: 4px;
+      border: none !important;
       white-space: pre-wrap;
       word-break: break-all;
       word-wrap: break-word;
       max-width: 100%;
       overflow-x: auto;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
     }
 
     .payload-block code {
@@ -1338,8 +1349,10 @@
               {% endif %}
 
               {% if f.poc %}
-              <p class="section-label">Proof of Concept</p>
-              <pre class="poc-block">{{ f.poc }}</pre>
+              <div class="poc-wrapper">
+                <p class="section-label">Proof of Concept</p>
+                <pre class="poc-block">{{ f.poc }}</pre>
+              </div>
               {% endif %}
 
               {% if f.evidence_images %}
