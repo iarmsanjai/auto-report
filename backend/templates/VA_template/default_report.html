@@ -512,18 +512,20 @@
       position: relative;
       z-index: 1;
       font-size: 22px;
-      font-weight: 700;
-      color: #1f86d0;
-      margin: 0 0 8px;
+      font-weight: 800;
+      color: #111111;
+      margin: 0 auto 8px;
+      max-width: 540px;
       letter-spacing: 0.3px;
       text-align: center;
     }
 
     .toc-divider {
+      max-width: 540px;
       width: 100%;
       height: 2px;
-      background: #1f86d0;
-      margin-bottom: 24px;
+      background: #111111;
+      margin: 0 auto 24px;
     }
 
     .toc-nav {
@@ -532,6 +534,9 @@
       display: flex;
       flex-direction: column;
       gap: 0;
+      max-width: 540px;
+      margin: 0 auto;
+      width: 100%;
     }
 
     .toc-entry {
@@ -540,7 +545,7 @@
       gap: 6px;
       padding: 5px 0;
       text-decoration: none;
-      color: #1a1a1a;
+      color: #111111;
       border-bottom: none;
       transition: background 0.1s;
       flex-wrap: nowrap;
@@ -548,29 +553,31 @@
 
     .toc-entry:hover .toc-title,
     .toc-entry:hover .toc-num {
-      color: #1f86d0;
+      color: #111111;
     }
 
     .toc-l1 {
-      font-weight: 600;
+      font-weight: 700;
       font-size: 12.5px;
+      color: #111111;
     }
 
     .toc-l2 {
-      font-weight: 400;
+      font-weight: 500;
       font-size: 11.5px;
       padding-left: 22px;
-      color: #333;
+      color: #111111;
     }
 
     .toc-l2 .toc-num {
-      color: #555;
+      color: #111111;
+      font-weight: 600;
     }
 
     .toc-num {
-      min-width: 34px;
+      min-width: 38px;
       flex-shrink: 0;
-      color: #000;
+      color: #111111;
       font-weight: 700;
     }
 
@@ -580,12 +587,13 @@
       overflow-wrap: break-word;
       white-space: normal;
       padding-right: 4px;
+      color: #111111;
     }
 
     .toc-dots {
       flex: 1;
-      border-bottom: none;
-      margin: 0 6px 4px;
+      border-bottom: 1px dotted #444444;
+      margin: 0 8px 4px;
       min-width: 20px;
     }
 
@@ -595,12 +603,12 @@
       text-align: right;
       font-weight: 700;
       font-size: 11.5px;
-      color: #000;
+      color: #111111;
     }
 
     .toc-l2 .toc-page-num {
-      font-weight: 400;
-      color: #555;
+      font-weight: 600;
+      color: #111111;
     }
 
     /* ── A4 content pages ── */
