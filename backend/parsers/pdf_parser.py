@@ -173,6 +173,8 @@ def parse_pdf(content: bytes, filename: str = "") -> ImportResult:
         )
 
     findings = _parse_finding_blocks(raw_text)
+    # Automatically drop Info level vulnerabilities
+    findings = [f for f in findings if f.cvss.level.lower() != "info"]
 
     if not findings:
         warnings.append(

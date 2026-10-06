@@ -86,6 +86,8 @@ async def import_csv(
         log.exception("CSV parse error for file '%s': %s", file.filename, str(e))
         raise HTTPException(status_code=422, detail=f"Failed to parse CSV file: {str(e)}")
 
+    result.findings = [f for f in result.findings if f.cvss.level.lower() != "info"]
+    result.count = len(result.findings)
     log.info("CSV import: %d findings (original=%s, safe=%s)", result.count, file.filename, safe_filename)
     return result
 

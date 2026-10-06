@@ -560,7 +560,7 @@ function FindingForm({ initial, onSave, onCancel, toast }) {
             <div className="form-group">
               <label className="form-label">Severity *</label>
               <select value={f.cvss?.level || 'medium'} onChange={e => setCvss('level', e.target.value)} className="form-select">
-                {['critical', 'high', 'medium', 'low', 'info'].map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                {['critical', 'high', 'medium', 'low'].map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
               </select>
             </div>
             <div className="form-group">

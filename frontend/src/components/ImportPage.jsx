@@ -89,8 +89,9 @@ export default function ImportPage({ onImportDone, onBack, authUser, toast }) {
           return
         }
 
-        if (result.count > 0) {
-          allFindings = [...allFindings, ...result.findings]
+        const validFindings = (result.findings || []).filter(f => f.cvss?.level?.toLowerCase() !== 'info')
+        if (validFindings.length > 0) {
+          allFindings = [...allFindings, ...validFindings]
           if (result.warnings && result.warnings.length > 0) {
             allWarnings = [...allWarnings, ...result.warnings.map(w => `[${file.name}] ${w}`)]
           }

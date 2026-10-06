@@ -78,13 +78,13 @@ def _fmt_date(d: str, long: bool = True) -> str:
 
 
 def compute_stats(findings: List[Finding]) -> FindingStats:
-    active = [f for f in findings if not f.false_positive]
+    active = [f for f in findings if not f.false_positive and f.cvss.level.lower() != "info"]
     return FindingStats(
-        count_critical=sum(1 for f in active if f.cvss.level == "critical"),
-        count_high=sum(1 for f in active if f.cvss.level == "high"),
-        count_medium=sum(1 for f in active if f.cvss.level == "medium"),
-        count_low=sum(1 for f in active if f.cvss.level == "low"),
-        count_info=sum(1 for f in active if f.cvss.level == "info"),
+        count_critical=sum(1 for f in active if f.cvss.level.lower() == "critical"),
+        count_high=sum(1 for f in active if f.cvss.level.lower() == "high"),
+        count_medium=sum(1 for f in active if f.cvss.level.lower() == "medium"),
+        count_low=sum(1 for f in active if f.cvss.level.lower() == "low"),
+        count_info=0,
         total=len(active),
     )
 
@@ -168,8 +168,10 @@ def group_findings_by_vulnerability(findings: List[Finding]) -> List[Finding]:
     Group findings by vulnerability heading (title).
     Merges all IP & Port endpoints into a single vulnerability's affected_hosts list.
     Keeps 1 description, 1 poc, 1 recommendation per vulnerability.
+    Automatically drops Info level vulnerabilities.
     """
-    sev_order = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
+    findings = [f for f in findings if f.cvss.level.lower() != "info"]
+    sev_order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
     grouped: dict[str, tuple[Finding, set]] = {}
 
     for f in findings:

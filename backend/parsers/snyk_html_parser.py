@@ -101,6 +101,9 @@ def parse_snyk_html(content: bytes, filename: str = "") -> ImportResult:
             source="snyk_html",
         ))
 
+    # Automatically drop Info level vulnerabilities
+    findings = [f for f in findings if f.cvss.level.lower() != "info"]
+
     warnings = []
     if not findings:
         warnings.append("No findings extracted from HTML. Check if it's a valid Snyk report.")

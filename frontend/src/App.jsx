@@ -112,8 +112,15 @@ export default function App() {
   // Initialize theme at root
   useTheme()
 
-  const [findings, setFindings]     = useState(() => lsRead(LS_FINDINGS, []))
-  const [page, setPage]             = useState(() => lsRead(LS_FINDINGS, []).length > 0 ? 'dashboard' : 'hub')
+  const filterInfo = (list) => (list || []).filter(f => f.cvss?.level?.toLowerCase() !== 'info')
+  const [findings, setFindingsRaw] = useState(() => filterInfo(lsRead(LS_FINDINGS, [])))
+  const setFindings = (val) => {
+    setFindingsRaw(prev => {
+      const next = typeof val === 'function' ? val(prev) : val
+      return filterInfo(next)
+    })
+  }
+  const [page, setPage]             = useState(() => filterInfo(lsRead(LS_FINDINGS, [])).length > 0 ? 'dashboard' : 'hub')
   const [meta, setMeta]             = useState(() => ({ ...DEFAULT_META, ...lsRead(LS_META, {}) }))
   const [editTarget, setEditTarget] = useState(null)
   const [toasts, setToasts]         = useState([])

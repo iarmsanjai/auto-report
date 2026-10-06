@@ -353,6 +353,8 @@ def parse_csv(content: bytes, filename: str = "") -> ImportResult:
             log.warning("Finding object creation error for '%s': %s", group.get("title"), err)
             warnings.append(f"Skipped finding '{group.get('title')}': {err}")
 
+    # Automatically drop Info level vulnerabilities
+    findings = [f for f in findings if f.cvss.level.lower() != "info"]
     findings.sort(key=lambda f: SEV_ORDER.get(f.cvss.level, 99))
 
     if not findings:

@@ -3,7 +3,6 @@ const SEV = [
   { key: 'high',     color: 'var(--sev-high)',     label: 'High' },
   { key: 'medium',   color: 'var(--sev-medium)',   label: 'Medium' },
   { key: 'low',      color: 'var(--sev-low)',       label: 'Low' },
-  { key: 'info',     color: 'var(--sev-info)',      label: 'Info' },
 ]
 
 function computeStats(findings) {

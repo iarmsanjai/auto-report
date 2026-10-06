@@ -71,19 +71,20 @@ export default function FileUpload({ onImport, toast }) {
         return
       }
 
-      if (!result.count) {
+      const validFindings = (result.findings || []).filter(f => f.cvss?.level?.toLowerCase() !== 'info')
+      if (!validFindings.length) {
         toast(`No findings extracted from ${file.name}. ${result.warnings?.[0] || ''}`, 'warn')
         return
       }
       setPreview({
         name: file.name,
-        count: result.count,
-        findings: result.findings,
+        count: validFindings.length,
+        findings: validFindings,
         warnings: result.warnings || [],
         scanType: selectedType,
         template: currentType.template,
       })
-      toast(`Extracted ${result.count} findings from ${file.name}`)
+      toast(`Extracted ${validFindings.length} findings from ${file.name}`)
     } catch (err) {
       toast(err?.response?.data?.detail || 'Upload failed — is the backend running?', 'error')
     } finally {

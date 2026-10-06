@@ -167,7 +167,7 @@ export default function ReportPreview({ findings, meta, toast, authUser, current
       <div className="card mb-20">
         <div className="section-label">Severity Breakdown (Active Findings)</div>
         <div style={{ display: 'flex', gap: 10 }}>
-          {['critical','high','medium','low','info'].map(s => (
+          {['critical','high','medium','low'].map(s => (
             <div key={s} style={{
               background: `${SEV_COLORS[s]}15`,
               border: `1px solid ${SEV_COLORS[s]}33`,
