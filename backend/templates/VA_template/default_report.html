@@ -206,16 +206,16 @@
     }
 
     .cover-report-type {
-      font-size: 11px;
-      font-weight: 600;
+      font-size: 13px;
+      font-weight: 700;
       letter-spacing: 2.5px;
       text-transform: uppercase;
-      color: rgba(255, 255, 255, 0.65);
+      color: rgba(255, 255, 255, 0.75);
       margin-bottom: 10px;
     }
 
     .cover-title {
-      font-size: 26px;
+      font-size: 28px;
       font-weight: 800;
       line-height: 1.25;
       color: #fff;
@@ -233,37 +233,32 @@
     }
 
     .cover-meta-row {
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
 
     .cover-meta-label {
-      font-size: 10px;
-      font-weight: 800;
+      font-size: 12px;
+      font-weight: 900 !important;
       letter-spacing: 1.5px;
       text-transform: uppercase;
-      color: rgba(255, 255, 255, 0.85);
-      margin-bottom: 3px;
+      color: #ffffff !important;
+      margin-bottom: 4px;
     }
 
     .cover-meta-value {
-      font-size: 16px;
+      font-size: 18px;
       font-weight: 700;
       color: #fff;
       line-height: 1.2;
     }
 
     .cover-meta-value.client {
-      font-size: 20px;
+      font-size: 22px;
       font-weight: 800;
     }
 
     .cover-date {
-      position: absolute;
-      right: 48px;
-      bottom: 36px;
-      font-size: 11px;
-      color: rgba(255, 255, 255, 0.6);
-      letter-spacing: 0.5px;
+      display: none !important;
     }
 
     /* ── Severity colours ── */
@@ -721,7 +716,7 @@
     </div>
 
     <!-- Date stamp bottom-right corner -->
-    <span class="cover-date">{{ report.report_delivery_date | fmt_date }}</span>
+    <!-- bottom-right date stamp removed -->
 
   </div>
 
