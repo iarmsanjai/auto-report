@@ -29,9 +29,9 @@ SEV_COLORS = {
 }
 
 EASE_COLORS = {
-    "Trivial":   ("#196b24", "#ffffff"),
-    "Moderate":  ("#ff7a00", "#ffffff"),
-    "Difficult": ("#c00000", "#ffffff"),
+    "Trivial":   ("#d4edda", "#155724"),
+    "Moderate":  ("#f9e8dc", "#8b3a00"),
+    "Difficult": ("#f8d7da", "#721c24"),
 }
 
 ALLOWED_TAGS = list(bleach.sanitizer.ALLOWED_TAGS) + [
@@ -55,13 +55,26 @@ def _render_md(text: str) -> str:
 def _fmt_date(d: str, long: bool = True) -> str:
     if not d:
         return ""
+    d_str = str(d).strip()
+    if not d_str:
+        return ""
+    dt = None
     try:
-        dt = datetime.fromisoformat(d.strip())
-        if long:
-            return f"{dt.day} {dt.strftime('%B %Y')}"
-        return f"{dt.day:02d}-{dt.month:02d}-{dt.year}"
+        dt = datetime.fromisoformat(d_str.replace("Z", "+00:00"))
     except Exception:
-        return d
+        pass
+
+    if not dt:
+        for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%m/%d/%Y", "%d-%m-%Y", "%Y/%m/%d", "%d %B %Y", "%d %b %Y"):
+            try:
+                dt = datetime.strptime(d_str, fmt)
+                break
+            except Exception:
+                pass
+
+    if dt:
+        return dt.strftime("%d %B %Y")
+    return d_str
 
 
 def compute_stats(findings: List[Finding]) -> FindingStats:
@@ -160,6 +173,19 @@ def group_findings_by_vulnerability(findings: List[Finding]) -> List[Finding]:
     grouped: dict[str, tuple[Finding, set]] = {}
 
     for f in findings:
+        # Auto-populate affected_hosts from affected_components if affected_hosts is empty
+        if not f.affected_hosts and f.affected_components:
+            from models.schemas import AffectedHost
+            for comp in f.affected_components:
+                comp_str = str(comp).strip()
+                if ":" in comp_str:
+                    parts = comp_str.split(":", 1)
+                    ip_val = parts[0].strip()
+                    port_val = parts[1].strip()
+                    f.affected_hosts.append(AffectedHost(ip=ip_val, port=port_val, protocol="tcp"))
+                elif comp_str:
+                    f.affected_hosts.append(AffectedHost(ip=comp_str, port="", protocol=""))
+
         norm_title = f.title.strip().lower() if f.title else "untitled finding"
         if norm_title not in grouped:
             new_f = f.model_copy(deep=True)
@@ -285,7 +311,7 @@ def _inline_render(meta: ReportMeta, findings: List[Finding], stats: FindingStat
     )
     return f"""<!DOCTYPE html><html><head><meta charset="UTF-8">
 <title>VAPT Report — {esc(meta.client_name or "Client")}</title>
-<style>body{{font-family:Garamond,serif;padding:40px;max-width:900px;margin:0 auto}}
+<style>@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&display=swap');*,*::before,*::after{{font-family:'EB Garamond',Garamond,serif !important}}body{{font-family:'EB Garamond',Garamond,serif;padding:40px;max-width:900px;margin:0 auto}}
 table{{width:100%;border-collapse:collapse}}th,td{{border:1px solid #1f86d0;padding:8px}}
 th{{background:#1f86d0;color:#fff}}</style></head><body>
 <h1>VAPT Report — {esc(meta.client_name or "")}</h1>

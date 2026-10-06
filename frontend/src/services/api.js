@@ -267,3 +267,28 @@ export function downloadBlob(content, filename, mimeType = 'text/plain') {
 export function todayStr() {
   return new Date().toISOString().split('T')[0]
 }
+
+export function formatDateLong(dateStr) {
+  if (!dateStr) return ''
+  try {
+    const parts = String(dateStr).trim().split(/[-/]/)
+    let d
+    if (parts.length === 3 && parts[0].length === 4) {
+      // YYYY-MM-DD
+      d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]))
+    } else if (parts.length === 3 && parts[2].length === 4) {
+      // DD/MM/YYYY
+      d = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]))
+    } else {
+      d = new Date(dateStr)
+    }
+    if (isNaN(d.getTime())) return dateStr
+    const day = String(d.getDate()).padStart(2, '0')
+    const month = d.toLocaleString('en-US', { month: 'long' })
+    const year = d.getFullYear()
+    return `${day} ${month} ${year}`
+  } catch (e) {
+    return dateStr
+  }
+}
+

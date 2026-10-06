@@ -83,9 +83,19 @@ def _detect_scanner(columns: List[str]) -> Tuple[str, dict]:
     return "generic", GENERIC_MAP
 
 
-def _norm_sev(raw: str) -> str:
+def _norm_sev(raw: str, score: float = 0.0) -> str:
     s = (raw or "").lower().strip()
-    return SEVERITY_NORMALISE.get(s, "info")
+    if s in SEVERITY_NORMALISE:
+        return SEVERITY_NORMALISE[s]
+    if score >= 9.0:
+        return "critical"
+    elif score >= 7.0:
+        return "high"
+    elif score >= 4.0:
+        return "medium"
+    elif score > 0.0:
+        return "low"
+    return "info"
 
 
 def _norm_ease(raw: str) -> str:
@@ -154,31 +164,48 @@ def _extract_row_endpoint(row: pd.Series, field_map: dict, df_cols_lower: dict) 
 def parse_csv(content: bytes, filename: str = "") -> ImportResult:
     """
     Parse a CSV file and return an ImportResult with normalized, grouped findings.
-    Auto-detects encoding and scanner type.
+    Auto-detects encoding, separator, and scanner type.
     """
     warnings = []
+    df = None
 
-    # Try UTF-8 first, fall back to latin-1
-    for enc in ("utf-8", "latin-1", "cp1252"):
-        try:
-            df = pd.read_csv(
-                io.BytesIO(content),
-                encoding=enc,
-                on_bad_lines="skip",
-                low_memory=False,
-            )
+    # Try various encodings and separators, prioritizing multi-column splits
+    encodings = ("utf-8", "utf-8-sig", "utf-16", "utf-16-le", "utf-16-be", "latin-1", "cp1252")
+    separators = [None, ",", ";", "\t", "|"]
+
+    best_df = None
+    for enc in encodings:
+        for sep in separators:
+            try:
+                kwargs = {"encoding": enc, "on_bad_lines": "skip", "low_memory": False}
+                if sep is None:
+                    kwargs["sep"] = None
+                    kwargs["engine"] = "python"
+                else:
+                    kwargs["sep"] = sep
+
+                df_try = pd.read_csv(io.BytesIO(content), **kwargs)
+                if df_try is not None and not df_try.empty:
+                    if len(df_try.columns) > 1:
+                        best_df = df_try
+                        break
+                    elif best_df is None:
+                        best_df = df_try
+            except Exception:
+                continue
+        if best_df is not None and len(best_df.columns) > 1:
             break
-        except Exception:
-            df = None
+
+    df = best_df
 
     if df is None or df.empty:
-        return ImportResult(count=0, findings=[], source="csv", warnings=["Empty or unreadable CSV"])
+        return ImportResult(count=0, findings=[], source="csv", warnings=["Empty or unreadable CSV file"])
 
     scanner, field_map = _detect_scanner(list(df.columns))
     log.info("Detected scanner: %s, rows: %d", scanner, len(df))
 
     # Build a lowercase column lookup: lower_name → original_name
-    df_cols_lower = {c.lower().strip(): c for c in df.columns}
+    df_cols_lower = {str(c).lower().strip(): c for c in df.columns}
 
     grouped_data: dict[tuple, dict] = {}
     skipped = 0
@@ -188,23 +215,23 @@ def parse_csv(content: bytes, filename: str = "") -> ImportResult:
             def get(key: str) -> str:
                 return _resolve(row, field_map.get(key, []), df_cols_lower)
 
-            risk_raw = get("cvss.level")
-            level = _norm_sev(risk_raw)
-
-            # Skip rows with no meaningful severity
-            if not risk_raw or risk_raw.lower() in ("none", "passed", "open", "n/a"):
+            title = get("title") or _resolve(row, ["name", "vulnerability", "issue", "plugin name", "title", "alert"], df_cols_lower)
+            if not title or str(title).lower() in ("nan", "none", "null", ""):
                 skipped += 1
                 continue
 
-            title = get("title") or "Untitled Finding"
-
             score_raw = get("cvss.score")
             try:
-                score = float(score_raw)
+                score_clean = str(score_raw).replace(",", ".")
+                m = re.search(r"([0-9]+(?:\.[0-9]+)?)", score_clean)
+                score = float(m.group(1)) if m else float(score_raw)
             except (ValueError, TypeError):
                 score = 0.0
 
-            refs_raw = get("references")
+            risk_raw = get("cvss.level")
+            level = _norm_sev(risk_raw, score)
+
+            refs_raw = str(get("references") or "")
             refs = [r.strip() for r in refs_raw.replace(";", "\n").split("\n") if r.strip() and r.strip().lower() != "nan"]
 
             poc = get("poc")
@@ -214,17 +241,17 @@ def parse_csv(content: bytes, filename: str = "") -> ImportResult:
 
             if group_key not in grouped_data:
                 grouped_data[group_key] = {
-                    "title": title,
-                    "summary": get("summary"),
-                    "description": get("description"),
-                    "impact": get("impact"),
-                    "recommendation": get("recommendation"),
-                    "cvss_vector": get("cvss.vector"),
-                    "cwe": get("cwe"),
+                    "title": str(title)[:500].strip(),
+                    "summary": str(get("summary") or "")[:1000].strip(),
+                    "description": str(get("description") or ""),
+                    "impact": str(get("impact") or ""),
+                    "recommendation": str(get("recommendation") or ""),
+                    "cvss_vector": str(get("cvss.vector") or "")[:250].strip(),
+                    "cwe": str(get("cwe") or "")[:30].strip(),
                     "ease": _norm_ease(""),
                     "severities": [level],
                     "scores": [score],
-                    "poc": poc,
+                    "poc": str(poc or ""),
                     "references": set(refs),
                     "endpoints_seen": set(),
                     "affected_hosts": [],
@@ -236,15 +263,15 @@ def parse_csv(content: bytes, filename: str = "") -> ImportResult:
             if refs:
                 group["references"].update(refs)
             if not group["description"] and get("description"):
-                group["description"] = get("description")
+                group["description"] = str(get("description") or "")
             if not group["impact"] and get("impact"):
-                group["impact"] = get("impact")
+                group["impact"] = str(get("impact") or "")
             if not group["recommendation"] and get("recommendation"):
-                group["recommendation"] = get("recommendation")
+                group["recommendation"] = str(get("recommendation") or "")
             if not group["cwe"] and get("cwe"):
-                group["cwe"] = get("cwe")
+                group["cwe"] = str(get("cwe") or "")[:30].strip()
             if not group["poc"] and poc:
-                group["poc"] = poc
+                group["poc"] = str(poc or "")
 
             # Deduplicate Affected Endpoints: IP + Port + Protocol
             ep_key = (host_ip, port, protocol.lower())
@@ -252,7 +279,11 @@ def parse_csv(content: bytes, filename: str = "") -> ImportResult:
                 group["endpoints_seen"].add(ep_key)
                 from models.schemas import AffectedHost
                 group["affected_hosts"].append(
-                    AffectedHost(ip=host_ip, port=port, protocol=protocol)
+                    AffectedHost(
+                        ip=str(host_ip)[:45].strip(),
+                        port=str(port)[:64].strip(),
+                        protocol=str(protocol)[:32].strip(),
+                    )
                 )
 
         except Exception as e:
@@ -262,7 +293,6 @@ def parse_csv(content: bytes, filename: str = "") -> ImportResult:
     findings: List[Finding] = []
     for key, group in grouped_data.items():
         unique_sevs = set(group["severities"])
-        # Pick highest severity (Critical=0, High=1, Medium=2, Low=3, Info=4)
         highest_level = min(group["severities"], key=lambda s: SEV_ORDER.get(s, 99))
         highest_score = max(group["scores"]) if group["scores"] else 0.0
 
@@ -271,7 +301,6 @@ def parse_csv(content: bytes, filename: str = "") -> ImportResult:
             log.warning(msg)
             warnings.append(msg)
 
-        # Build affected_components list
         affected_comps = []
         for ah in group["affected_hosts"]:
             if ah.ip and ah.port:
@@ -285,7 +314,6 @@ def parse_csv(content: bytes, filename: str = "") -> ImportResult:
             if comp_str and comp_str not in affected_comps:
                 affected_comps.append(comp_str)
 
-        # Build port_protocol summary
         unique_ports = []
         for ah in group["affected_hosts"]:
             p_str = ah.port
@@ -293,35 +321,38 @@ def parse_csv(content: bytes, filename: str = "") -> ImportResult:
                 p_str = f"{ah.port}/{ah.protocol}"
             if p_str and p_str not in unique_ports:
                 unique_ports.append(p_str)
-        port_protocol_str = ", ".join(unique_ports)
+        port_protocol_str = ", ".join(unique_ports)[:60]
 
-        f = Finding(
-            id=str(uuid.uuid4())[:8],
-            title=group["title"],
-            summary=group["summary"],
-            description=group["description"],
-            impact=group["impact"],
-            recommendation=group["recommendation"],
-            cvss=CVSSModel(
-                score=highest_score,
-                vector=group["cvss_vector"],
-                level=highest_level,
-            ),
-            ease=group["ease"],
-            cwe=group["cwe"],
-            affected_components=affected_comps,
-            affected_hosts=group["affected_hosts"],
-            payload=[],
-            poc=group["poc"],
-            references=sorted(list(group["references"])),
-            validated=False,
-            false_positive=False,
-            source="csv",
-            port_protocol=port_protocol_str,
-        )
-        findings.append(f)
+        try:
+            f = Finding(
+                id=str(uuid.uuid4())[:8],
+                title=str(group["title"])[:500].strip(),
+                summary=str(group["summary"] or "")[:1000].strip(),
+                description=str(group["description"] or ""),
+                impact=str(group["impact"] or ""),
+                recommendation=str(group["recommendation"] or ""),
+                cvss=CVSSModel(
+                    score=highest_score,
+                    vector=str(group["cvss_vector"] or "")[:250].strip(),
+                    level=highest_level,
+                ),
+                ease=group["ease"],
+                cwe=str(group["cwe"] or "")[:30].strip(),
+                affected_components=affected_comps[:100],
+                affected_hosts=group["affected_hosts"][:500],
+                payload=[],
+                poc=str(group["poc"] or ""),
+                references=[str(r)[:2000].strip() for r in sorted(list(group["references"])) if r][:50],
+                validated=False,
+                false_positive=False,
+                source="csv",
+                port_protocol=port_protocol_str,
+            )
+            findings.append(f)
+        except Exception as err:
+            log.warning("Finding object creation error for '%s': %s", group.get("title"), err)
+            warnings.append(f"Skipped finding '{group.get('title')}': {err}")
 
-    # Sort grouped findings by severity (Critical → High → Medium → Low → Info)
     findings.sort(key=lambda f: SEV_ORDER.get(f.cvss.level, 99))
 
     if not findings:

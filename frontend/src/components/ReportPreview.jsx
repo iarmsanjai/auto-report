@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { exportHTML, exportPDF, downloadBlob, todayStr, updateReportStatus } from '../services/api'
+import { exportHTML, exportPDF, downloadBlob, todayStr, updateReportStatus, formatDateLong } from '../services/api'
 
 function computeStats(findings) {
   const active = findings.filter(f => !f.false_positive)
@@ -36,6 +36,23 @@ export default function ReportPreview({ findings, meta, toast, authUser, current
 
 
 
+  const parseBlobError = async (err, fallback = 'check backend') => {
+    if (err?.response?.data) {
+      if (err.response.data instanceof Blob) {
+        try {
+          const text = await err.response.data.text()
+          const parsed = JSON.parse(text)
+          if (typeof parsed.detail === 'string') return parsed.detail
+          if (Array.isArray(parsed.detail)) return parsed.detail.map(d => d.msg || d.detail).join('; ')
+        } catch (_) {}
+      } else if (err.response.data.detail) {
+        if (typeof err.response.data.detail === 'string') return err.response.data.detail
+        if (Array.isArray(err.response.data.detail)) return err.response.data.detail.map(d => d.msg || d.detail).join('; ')
+      }
+    }
+    return err?.message || fallback
+  }
+
   const doDownloadPDF = async () => {
     setPdfLoading(true)
     try {
@@ -43,7 +60,8 @@ export default function ReportPreview({ findings, meta, toast, authUser, current
       downloadBlob(blob, getFileName('pdf'), 'application/pdf')
       toast('PDF report downloaded ✓')
     } catch (err) {
-      toast('PDF export failed — ' + (err?.response?.data?.detail || 'check backend'), 'error')
+      const detail = await parseBlobError(err)
+      toast('PDF export failed — ' + detail, 'error')
     } finally {
       setPdfLoading(false)
     }
@@ -72,7 +90,8 @@ export default function ReportPreview({ findings, meta, toast, authUser, current
         setPdfLoading(false)
       }
     } catch (err) {
-      toast('PDF export failed — ' + (err?.response?.data?.detail || 'check backend'), 'error')
+      const detail = await parseBlobError(err)
+      toast('PDF export failed — ' + detail, 'error')
       setPdfLoading(false)
     }
   }
@@ -134,7 +153,7 @@ export default function ReportPreview({ findings, meta, toast, authUser, current
             { label: 'Client', val: meta.client_name || <span className="text-muted">Not set</span> },
             { label: 'Application', val: meta.application_name || <span className="text-muted">Not set</span> },
             { label: 'Active Findings', val: active.length, color: 'var(--cyan)' },
-            { label: 'Report Date', val: meta.report_delivery_date || <span className="text-muted">Not set</span> },
+            { label: 'Report Date', val: meta.report_delivery_date ? formatDateLong(meta.report_delivery_date) : <span className="text-muted">Not set</span> },
           ].map((s, i) => (
             <div key={i}>
               <div style={{ fontSize: 10, color: 'var(--dim)', marginBottom: 4 }}>{s.label}</div>
@@ -157,7 +176,7 @@ export default function ReportPreview({ findings, meta, toast, authUser, current
               textAlign: 'center',
               flex: 1,
             }}>
-              <div style={{ fontFamily: 'PT Sans, sans-serif', fontSize: 28, fontWeight: 700, color: SEV_COLORS[s] }}>
+              <div style={{ fontFamily: "'EB Garamond', Garamond, serif", fontSize: 28, fontWeight: 700, color: SEV_COLORS[s] }}>
                 {stats[`count_${s}`]}
               </div>
               <div style={{ fontSize: 10, color: 'var(--dim)', marginTop: 5 }}>{s.charAt(0).toUpperCase() + s.slice(1)}</div>
@@ -176,10 +195,10 @@ export default function ReportPreview({ findings, meta, toast, authUser, current
               <tbody>
                 {active.map((f, i) => (
                   <tr key={f.id}>
-                    <td style={{ color: 'var(--dim)', fontFamily: 'PT Sans, sans-serif', fontSize: 11 }}>{i + 1}</td>
+                    <td style={{ color: 'var(--dim)', fontFamily: "'EB Garamond', Garamond, serif", fontSize: 11 }}>{i + 1}</td>
                     <td className="truncate" style={{ maxWidth: 360 }}>{f.title}</td>
                     <td><span className={`sev-badge sev-${f.cvss?.level}`}>{f.cvss?.level}</span></td>
-                    <td style={{ fontFamily: 'PT Sans, sans-serif', fontSize: 11, color: 'var(--dim)' }}>{f.cvss?.score || '—'}</td>
+                    <td style={{ fontFamily: "'EB Garamond', Garamond, serif", fontSize: 11, color: 'var(--dim)' }}>{f.cvss?.score || '—'}</td>
                   </tr>
                 ))}
               </tbody>

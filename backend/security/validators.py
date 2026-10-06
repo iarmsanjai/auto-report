@@ -222,12 +222,21 @@ class InputValidator:
         if not content:
             raise HTTPException(status_code=400, detail="Uploaded file is empty.")
 
-        # Basic CSV safety: reject null bytes (binary content disguised as CSV)
+        # Basic CSV safety: reject null bytes unless file is valid UTF-16 encoded text
         if ext == ".csv" and b"\x00" in content:
-            raise HTTPException(
-                status_code=400,
-                detail="File content is invalid (binary data detected in CSV).",
-            )
+            is_utf16 = False
+            for enc in ("utf-16", "utf-16-le", "utf-16-be"):
+                try:
+                    content.decode(enc)
+                    is_utf16 = True
+                    break
+                except Exception:
+                    pass
+            if not is_utf16:
+                raise HTTPException(
+                    status_code=400,
+                    detail="File content is invalid (binary data detected in CSV).",
+                )
 
         # Generate a UUID filename to prevent path traversal / overwrite attacks
         safe_filename = f"{uuid.uuid4().hex}{ext}"

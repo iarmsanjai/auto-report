@@ -13,6 +13,7 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      font-family: 'EB Garamond', Garamond, serif !important;
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
@@ -111,7 +112,7 @@
     }
 
     code {
-      font-family: 'Courier New', monospace;
+      font-family: 'EB Garamond', Garamond, serif;
       background: #f4f4f4;
       padding: 2px 5px;
       border-radius: 3px;
@@ -119,7 +120,7 @@
     }
 
     pre {
-      font-family: 'Courier New', monospace;
+      font-family: 'EB Garamond', Garamond, serif;
       background: #f8f8f8;
       border: 1px solid #ddd;
       padding: 12px;
@@ -438,7 +439,7 @@
     .poc-block {
       background: #0a0a14;
       color: #a0ffa0;
-      font-family: 'Courier New', monospace;
+      font-family: 'EB Garamond', Garamond, serif;
       font-size: 11px;
       padding: 12px;
       border-radius: 5px;
@@ -1139,7 +1140,7 @@
               4.2 Risk Pie Chart by Vulnerabilities</h2>
             
             <!-- Severity Count Table -->
-            <table style="width: 100%; border-collapse: collapse; margin: 16px 0; border: none; font-size: 13px; font-family: Arial, sans-serif;">
+            <table style="width: 100%; border-collapse: collapse; margin: 16px 0; border: none; font-size: 13px; font-family: 'EB Garamond', Garamond, serif;">
               <thead>
                 <tr>
                   <th style="background: #00a2e8; color: #fff; border: 2px solid #fff; padding: 8px; font-weight: bold; text-align: center;">Severity</th>
@@ -1162,7 +1163,7 @@
 
             <!-- Vulnerability Assessment Risk Chart -->
             <div style="border: 1px solid #d3d3d3; padding: 20px; border-radius: 4px; margin: 20px 0; text-align: center; background: #fff;">
-              <h3 style="font-family: Arial, sans-serif; font-size: 16px; font-weight: normal; margin-bottom: 20px; color: #222; text-align: center;">Vulnerability Assessment Risk Chart</h3>
+              <h3 style="font-family: 'EB Garamond', Garamond, serif; font-size: 16px; font-weight: normal; margin-bottom: 20px; color: #222; text-align: center;">Vulnerability Assessment Risk Chart</h3>
               
               <svg width="240" height="240" viewBox="0 0 300 300" style="display: block; margin: 0 auto;">
                 {% if total_chart > 0 %}
@@ -1176,7 +1177,7 @@
                 {% endif %}
               </svg>
               
-              <div style="text-align: center; margin-top: 16px; font-family: Arial, sans-serif; font-size: 13px; color: #555;">
+              <div style="text-align: center; margin-top: 16px; font-family: 'EB Garamond', Garamond, serif; font-size: 13px; color: #555;">
                 <span style="display: inline-block; margin: 0 10px;">
                   <span style="display: inline-block; width: 12px; height: 12px; background: #FF0000; margin-right: 4px; vertical-align: middle;"></span>
                   Critical
@@ -1246,37 +1247,23 @@
             {% endif %}
 
             <div class="finding-block" id="{{ f.id }}">
-              <h2 class="finding-title">5.{{ loop.index }} {{ f.title }}</h2>
+              <h2 style="font-size: 16px; font-weight: bold; color: #002060; font-family: 'EB Garamond', Garamond, serif; margin: 16px 0 12px;">5.{{ loop.index }} {{ f.title }}</h2>
 
-              <table class="finding-meta-table">
+              <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-family: 'EB Garamond', Garamond, serif;">
                 <thead>
-                  <tr>
-                    <th style="width:20%">Severity</th>
-                    <th style="width:45%">Target Component / Host</th>
-                    <th style="width:20%">Port / Protocol</th>
-                    <th style="width:15%">ID</th>
+                  <tr style="background-color: #0099ff; color: #ffffff;">
+                    <th style="width: 10%; padding: 8px; text-align: center; border: 1px solid #ffffff; font-weight: bold; font-size: 13px;">ID</th>
+                    <th style="width: 54%; padding: 8px; text-align: center; border: 1px solid #ffffff; font-weight: bold; font-size: 13px;">Vulnerability</th>
+                    <th style="width: 20%; padding: 8px; text-align: center; border: 1px solid #ffffff; font-weight: bold; font-size: 13px;">Ease of Exploit</th>
+                    <th style="width: 16%; padding: 8px; text-align: center; border: 1px solid #ffffff; font-weight: bold; font-size: 13px;">Risk level</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td class="severity-value sev-{{ lvl }}">{{ lvl | capitalize }}</td>
-                    <td>
-                      {% if f.affected_hosts and f.affected_hosts | length > 0 %}
-                        {{ f.affected_hosts | map(attribute='ip') | unique | join(', ') }}
-                      {% elif f.affected_components %}
-                        {{ f.affected_components | join(', ') }}
-                      {% else %}
-                        N/A
-                      {% endif %}
-                    </td>
-                    <td>
-                      {% if f.affected_hosts and f.affected_hosts | length > 0 %}
-                        {{ f.affected_hosts | map(attribute='port') | select | unique | join(', ') or f.port_protocol or 'N/A' }}
-                      {% else %}
-                        {{ f.port_protocol or 'N/A' }}
-                      {% endif %}
-                    </td>
-                    <td style="font-weight: bold;">{{ f_id }}</td>
+                    <td style="text-align: center; padding: 8px; background-color: #f2f2f2; border: 1px solid #ffffff; font-size: 13px; font-weight: normal;">{{ f_id }}</td>
+                    <td style="text-align: center; padding: 8px; background-color: #f2f2f2; border: 1px solid #ffffff; font-size: 13px; font-weight: normal;">{{ f.title }}</td>
+                    <td style="text-align: center; padding: 8px; background-color: {{ f.ease | ease_color }}; color: {{ f.ease | ease_text }}; font-weight: bold; border: 1px solid #ffffff; font-size: 13px;">{{ f.ease or 'Moderate' }}</td>
+                    <td style="text-align: center; padding: 8px; background-color: {{ lvl | sev_color }}; color: {{ lvl | sev_text }}; font-weight: bold; border: 1px solid #ffffff; font-size: 13px;">{{ lvl | capitalize }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -1285,14 +1272,15 @@
               <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 1px solid #000;">
                 <thead>
                   <tr style="background-color: #00a2ff; color: #ffffff;">
+                    <th style="width: 60%; padding: 8px; text-align: center; border: 1px solid #000; font-weight: bold;">Host (IP)</th>
                     <th style="width: 40%; padding: 8px; text-align: center; border: 1px solid #000; font-weight: bold;">Port</th>
-                    <th style="width: 60%; padding: 8px; text-align: center; border: 1px solid #000; font-weight: bold;">Host</th>
                   </tr>
                 </thead>
                 <tbody>
                   {% if f.affected_hosts and f.affected_hosts | length > 0 %}
                     {% for host in f.affected_hosts %}
                     <tr>
+                      <td style="text-align: center; padding: 6px; border: 1px solid #000;">{{ host.ip or 'N/A' }}</td>
                       <td style="text-align: center; padding: 6px; border: 1px solid #000;">
                         {% if host.port and host.protocol and host.protocol.lower() not in host.port.lower() %}
                           {{ host.port }}/{{ host.protocol }}
@@ -1300,7 +1288,6 @@
                           {{ host.port or f.port_protocol or 'N/A' }}
                         {% endif %}
                       </td>
-                      <td style="text-align: center; padding: 6px; border: 1px solid #000;">{{ host.ip or 'N/A' }}</td>
                     </tr>
                     {% endfor %}
                   {% elif f.affected_components and f.affected_components | length > 0 %}
@@ -1364,11 +1351,6 @@
               {% if f.recommendation %}
               <p class="section-label">Recommendation</p>
               <div>{{ f.recommendation | md }}</div>
-              {% endif %}
-
-              {% if f.references %}
-              <p class="section-label">References</p>
-              <ul>{% for r in f.references %}<li><a href="{{ r }}">{{ r }}</a></li>{% endfor %}</ul>
               {% endif %}
             </div>
             {% endfor %}

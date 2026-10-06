@@ -34,11 +34,11 @@ const SCAN_TYPES = [
     icon: '🌐',
     label: 'Web VAPT',
     sublabel: 'Web Penetration Test',
-    description: 'Import manual web application penetration test findings in structured VAPT report format.',
+    description: 'Import manual web application penetration test findings in structured CSV or JSON format.',
     accept: '.csv,.json',
     fileHint: '.csv / .json',
     template: 'webvapt',
-    active: false,
+    active: true,
     color: '#ff8c42',
     glow: 'rgba(255,140,66,0.12)',
   },
@@ -79,8 +79,9 @@ export default function ImportPage({ onImportDone, onBack, authUser, toast }) {
 
     try {
       for (const file of validFiles) {
+        const ext = file.name.split('.').pop().toLowerCase()
         let result
-        if (selectedType === 'nessus') {
+        if (ext === 'csv' || selectedType === 'nessus' || selectedType === 'webvapt') {
           result = await importCSV(file)
         } else {
           toast('This scanner type is not yet supported', 'warn')

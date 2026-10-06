@@ -64,9 +64,6 @@ def validate_findings(findings: List[Finding]) -> ValidationResult:
                 message=f"{f.cvss.level.capitalize()} finding has no Proof of Concept"
             ))
 
-        if not f.references:
-            warnings.append(ValidationError(index=idx, finding_id=fid, field="references", message="No references provided"))
-
     return ValidationResult(
         valid=len(errors) == 0,
         errors=errors,

@@ -96,24 +96,24 @@ class Finding(BaseModel):
     id: str = Field(default_factory=gen_id, max_length=64)
     title: str = Field(..., min_length=1, max_length=512)
     summary: str = Field(default="", max_length=1024)
-    description: str = Field(default="", max_length=65535)
-    impact: str = Field(default="", max_length=65535)
-    recommendation: str = Field(default="", max_length=65535)
+    description: str = Field(default="", max_length=10485760)
+    impact: str = Field(default="", max_length=10485760)
+    recommendation: str = Field(default="", max_length=10485760)
     cvss: CVSSModel = Field(default_factory=CVSSModel)
     ease: str = Field(default="Moderate", max_length=32)
     cwe: str = Field(default="", max_length=32)
     affected_components: List[str] = Field(default_factory=list, max_length=100)
     payload: List[str] = Field(default_factory=list, max_length=50)
-    poc: str = Field(default="", max_length=65535)
+    poc: str = Field(default="", max_length=10485760)
     references: List[str] = Field(default_factory=list, max_length=50)
     validated: bool = False
     false_positive: bool = False
     source: str = Field(default="manual", max_length=32)
-    evidence_images: List[str] = Field(default_factory=list, max_length=20)
+    evidence_images: List[str] = Field(default_factory=list, max_length=50)
     device_identifier: str = Field(default="", max_length=256)
     # VA-specific extras
     port_protocol: str = Field(default="", max_length=64)
-    output: str = Field(default="", max_length=65535)
+    output: str = Field(default="", max_length=10485760)
     affected_hosts: List[AffectedHost] = Field(default_factory=list, max_length=500)
 
     model_config = {"extra": "ignore"}
@@ -138,7 +138,7 @@ class Finding(BaseModel):
             return "import"  # Normalise unknown source tags
         return v
 
-    @field_validator("affected_components", "payload", "references", "evidence_images", mode="before")
+    @field_validator("affected_components", "payload", "references", mode="before")
     @classmethod
     def cap_list_items(cls, v: Any) -> list:
         """Enforce maximum string length on list items to prevent oversized payloads."""
@@ -146,6 +146,14 @@ class Finding(BaseModel):
             return []
         # Cap each item at 2048 chars; drop non-string items
         return [str(item)[:2048] for item in v if item is not None][:100]
+
+    @field_validator("evidence_images", mode="before")
+    @classmethod
+    def cap_evidence_images(cls, v: Any) -> list:
+        """Allow full base64 image strings for evidence images up to 10MB per item."""
+        if not isinstance(v, list):
+            return []
+        return [str(item)[:10485760] for item in v if item is not None][:50]
 
     @property
     def severity(self) -> str:
@@ -177,7 +185,7 @@ class ReportMeta(BaseModel):
     scoped_ips_count: str = Field(default="", max_length=16)
     document_title: str = Field(default="", max_length=256)
     approved_by: str = Field(default="", max_length=128)
-    risk_graph: str = Field(default="", max_length=65535)  # base64 image or SVG
+    risk_graph: str = Field(default="", max_length=10485760)  # base64 image or SVG
     scoped_assets: List[ScopedAsset] = Field(default_factory=list, max_length=500)
 
     model_config = {"extra": "ignore"}

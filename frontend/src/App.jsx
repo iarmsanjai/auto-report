@@ -16,8 +16,9 @@ const DEFAULT_META = {
   application_version: '',
   application_approach: 'Gray Box',
   application_url: [],
-  tester_name: '',
-  validator_name: '',
+  tester_name: 'Anish R',
+  validator_name: 'Arun Krishna',
+  approved_by: 'Thanikainathan TS (ISMS Lead Auditor)',
   project_id: '',
   assessment_startdate: '',
   assessment_enddate: '',
@@ -157,6 +158,29 @@ export default function App() {
     lsWrite('vapt_current_report_status', currentReportStatus)
     setSavedAt(new Date())
   }, [findings, meta, currentReportId, currentReportStatus])
+
+  // ── Debounced Cloud Auto-save ──────────────────────────────────────────────
+  useEffect(() => {
+    if (!meta.client_name) return
+    const timer = setTimeout(async () => {
+      try {
+        setSavingCloud(true)
+        const data = await saveReportToDB(currentReportId, meta, findings)
+        if (data?.id && data.id !== currentReportId) {
+          setCurrentReportId(data.id)
+        }
+        if (data?.status) {
+          setCurrentReportStatus(data.status)
+        }
+      } catch (err) {
+        // Quiet background catch
+      } finally {
+        setSavingCloud(false)
+      }
+    }, 1500)
+
+    return () => clearTimeout(timer)
+  }, [findings, meta, currentReportId])
 
   const toast = useCallback((msg, type = 'ok', undoAction = null) => {
     const id = ++_toastId
@@ -398,15 +422,15 @@ export default function App() {
             style={{ color: 'var(--cyan)', borderColor: 'var(--cyan-dim)' }}
             onClick={saveToCloud}
             disabled={savingCloud}
-            title="Save report to Cloud Database"
+            title="Auto-saves automatically. Click for instant cloud sync."
           >
-            {savingCloud ? <span className="spinner" style={{ width: 10, height: 10, borderTopColor: 'var(--cyan)' }} /> : '☁'} Save to Cloud
+            {savingCloud ? <span className="spinner" style={{ width: 10, height: 10, borderTopColor: 'var(--cyan)' }} /> : '☁'} {savingCloud ? 'Cloud Syncing...' : 'Cloud Auto-Save'}
           </button>
           
           {savedAt && (
             <span className="header-save-status">
               <span className="header-save-dot" />
-              Saved {savedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              Auto-saved {savedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
             </span>
           )}
         </div>
