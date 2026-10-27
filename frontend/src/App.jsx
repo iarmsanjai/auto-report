@@ -18,6 +18,7 @@ const DEFAULT_META = {
   application_url: [],
   tester_name: 'Anish R',
   validator_name: 'Arun Krishna',
+  released_to_client_name: 'Arun Krishna',
   approved_by: 'Thanikainathan TS (ISMS Lead Auditor)',
   project_id: '',
   assessment_startdate: '',
@@ -204,6 +205,7 @@ export default function App() {
       application_version: '2.1',
       tester_name: 'Your Name',
       validator_name: 'Vignesh',
+      released_to_client_name: 'Arun Krishna',
       project_id: `IARM-${new Date().getFullYear()}-042`,
     }))
     toast('Sample data loaded ✓')

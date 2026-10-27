@@ -29,7 +29,7 @@ from models.schemas import (
 from parsers.csv_parser import parse_csv
 from security.middleware import check_rate_limit, get_client_ip, rate_limit_response
 from security.validators import InputValidator
-from services.report_generator import compute_stats, render_report, group_findings_by_vulnerability
+from services.report_generator import compute_stats, render_report, group_findings_by_vulnerability, convert_html_to_pdf
 from services.validation import validate_findings
 
 log = logging.getLogger(__name__)
@@ -178,7 +178,7 @@ def _add_page_numbers(pdf_bytes: bytes) -> bytes:
             page.insert_textbox(
                 rect,
                 text,
-                fontsize=10,
+                fontsize=11,
                 fontname="helv",
                 color=(0.53, 0.53, 0.53),
                 align=1
@@ -192,12 +192,9 @@ def _add_page_numbers(pdf_bytes: bytes) -> bytes:
 @router.post("/export/preview")
 async def preview_pdf(request: Request, payload: ReportPayload):
     """Quick preview using default template as PDF."""
-    import fitz  # PyMuPDF
-
     try:
         html = render_report(meta=payload.report, findings=payload.findings)
-        doc = fitz.open(stream=html.encode("utf-8"), filetype="html")
-        pdf_bytes = doc.convert_to_pdf()
+        pdf_bytes = convert_html_to_pdf(html)
         pdf_bytes = _add_page_numbers(pdf_bytes)
         return Response(content=pdf_bytes, media_type="application/pdf")
     except Exception as e:
@@ -216,8 +213,6 @@ async def export_pdf(
 
     Security: template name validated against allow-list + path-traversal check.
     """
-    import fitz  # PyMuPDF
-
     safe_template = InputValidator.template_name(
         template or "VA_template/default_report",
         templates_root=settings.TEMPLATES_DIR,
@@ -229,8 +224,7 @@ async def export_pdf(
             findings=payload.findings,
             template_name=safe_template,
         )
-        doc = fitz.open(stream=html.encode("utf-8"), filetype="html")
-        pdf_bytes = doc.convert_to_pdf()
+        pdf_bytes = convert_html_to_pdf(html)
         pdf_bytes = _add_page_numbers(pdf_bytes)
         return Response(
             content=pdf_bytes,

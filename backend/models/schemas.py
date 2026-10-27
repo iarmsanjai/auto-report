@@ -185,6 +185,8 @@ class ReportMeta(BaseModel):
     scoped_ips_count: str = Field(default="", max_length=16)
     document_title: str = Field(default="", max_length=256)
     approved_by: str = Field(default="", max_length=128)
+    released_to_client_name: str = Field(default="", max_length=128)
+    released_by: str = Field(default="", max_length=128)
     risk_graph: str = Field(default="", max_length=10485760)  # base64 image or SVG
     scoped_assets: List[ScopedAsset] = Field(default_factory=list, max_length=500)
 

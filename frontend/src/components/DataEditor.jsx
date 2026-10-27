@@ -313,6 +313,28 @@ function MetaForm({ meta, setMeta }) {
             </select>
           </div>
 
+          <div className="form-group">
+            <label className="form-label">Released to Client</label>
+            <select
+              value={m.released_to_client_name || 'Arun Krishna'}
+              onChange={e => {
+                const val = e.target.value
+                set('released_to_client_name', val)
+                set('released_by', val)
+              }}
+              className="form-select"
+            >
+              {(() => {
+                const opts = ['Anish R', 'Arun Krishna', 'Vignesh', 'Veerla Vinay', 'Samruth Sriram D']
+                const current = m.released_to_client_name || m.released_by
+                const allOpts = current && !opts.includes(current) ? [current, ...opts] : opts
+                return allOpts.map(o => (
+                  <option key={o} value={o}>{o}</option>
+                ))
+              })()}
+            </select>
+          </div>
+
           <Field label="Document Title" value={m.document_title || ''} onChange={e => set('document_title', e.target.value)} placeholder="Vulnerability Assessment Report" />
 
           <div className="form-group">

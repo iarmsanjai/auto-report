@@ -6,6 +6,10 @@ from __future__ import annotations
 
 import html as html_mod
 import logging
+import os
+import shutil
+import subprocess
+import tempfile
 from datetime import datetime
 from pathlib import Path
 from typing import List
@@ -322,3 +326,75 @@ th{{background:#1f86d0;color:#fff}}</style></head><body>
 <p>Critical: {stats.count_critical} | High: {stats.count_high} | Medium: {stats.count_medium} |
 Low: {stats.count_low} | Info: {stats.count_info}</p>
 </body></html>"""
+
+
+def convert_html_to_pdf(html: str) -> bytes:
+    """
+    Converts HTML report string to PDF bytes.
+    First attempts using headless Chrome/Chromium/Edge for pixel-perfect browser rendering.
+    Falls back to PyMuPDF (fitz) if no headless browser executable is available.
+    """
+    browser_candidates = [
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+    ]
+    for exe in ["google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "chrome", "msedge"]:
+        w = shutil.which(exe)
+        if w:
+            browser_candidates.append(w)
+
+    browser_path = None
+    for cand in browser_candidates:
+        if os.path.isfile(cand):
+            browser_path = cand
+            break
+
+    if browser_path:
+        tmp_html = None
+        tmp_pdf = None
+        try:
+            with tempfile.NamedTemporaryFile("w", suffix=".html", delete=False, encoding="utf-8") as f:
+                f.write(html)
+                tmp_html = f.name
+
+            tmp_pdf = tmp_html + ".pdf"
+
+            cmd = [
+                browser_path,
+                "--headless=new",
+                "--disable-gpu",
+                "--no-sandbox",
+                "--no-pdf-header-footer",
+                f"--print-to-pdf={tmp_pdf}",
+                tmp_html,
+            ]
+            res = subprocess.run(cmd, capture_output=True, text=True, timeout=45)
+            if os.path.exists(tmp_pdf) and os.path.getsize(tmp_pdf) > 0:
+                with open(tmp_pdf, "rb") as f:
+                    return f.read()
+            else:
+                log.warning(
+                    "Browser headless PDF output missing/empty (stderr: %s). Falling back to PyMuPDF.",
+                    res.stderr,
+                )
+        except Exception as e:
+            log.warning("Browser headless PDF generation failed (%s). Falling back to PyMuPDF.", str(e))
+        finally:
+            if tmp_html and os.path.exists(tmp_html):
+                try:
+                    os.remove(tmp_html)
+                except Exception:
+                    pass
+            if tmp_pdf and os.path.exists(tmp_pdf):
+                try:
+                    os.remove(tmp_pdf)
+                except Exception:
+                    pass
+
+    # Fallback to PyMuPDF if headless browser rendering is unavailable
+    import fitz
+    doc = fitz.open(stream=html.encode("utf-8"), filetype="html")
+    return doc.convert_to_pdf()
+
